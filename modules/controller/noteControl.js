@@ -39,11 +39,11 @@ exports.readNotes = async (req, res) => {
             res.json(result);
         }
         else if (fetch == "archive") {
-            const result = await noteModel.Note.find({ userID: req.userID, archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
+            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
             res.json(result);
         }
         else {
-            const result = await noteModel.Note.find({ userID: req.userID, archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
+            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
             res.json(result);
         }
     }
@@ -100,14 +100,22 @@ exports.createNotes = async (req, res) => {
 //update note
 exports.updateNotes = async (req, res) => {
     try {
-        const result = await noteModel.Note.findById(req.params.id);
+        const note = await noteModel.Note.findById(req.params.id);
         //if note not found then do not allow user to go further
-        if (!result)
+        if (!note)
             return res.status(404).send("Note not found");
 
         //if user is not logged in then do not permit user to update note
-        if (result.userID.toString() !== req.userID)
-            return res.status(401).send("Not allowed to update.");
+        // if (result.userID.toString() !== req.userID)
+        //     return res.status(401).send("Not allowed to update.");
+
+        // Check if the collaborator exists in the collaborators array
+        if(note.collaborators.length!==0)
+        {
+            const collaboratorIndex = note.collaborators.indexOf(req.email);
+            if(collaboratorIndex===-1)
+                return res.status(400).send("Not alowed to update.")
+        }
 
         data = req.body;
         // const updateData =await noteModel.Note.updateOne({_id:req.params.id},data,{new:true});
@@ -117,6 +125,74 @@ exports.updateNotes = async (req, res) => {
     catch (err) {
         console.log(err);
         res.status(500).send("Some error occure.");
+    }
+}
+
+//update note collaborators
+exports.updateNoteCollaborators = async(req,res) => {
+    try{
+
+        const note = await noteModel.Note.findById(req.params.id);
+        //if note not found then do not allow user to go further
+        if(!note)
+            return res.status(404).send("Note not found");
+
+        // if user is not logged in then do not permit user to update note
+        // if(note.userID.toString() !== req.userID)
+        //     return res.status(401).send("Not alowed to update.");        
+                
+        // Check if the collaborator exists in the collaborators array
+        const collaboratorIndex = note.collaborators.indexOf(req.email);
+        if(collaboratorIndex===-1)
+            return res.status(400).send("Not alowed to update.")
+            
+        const collaboratorEmail = req.body.email;
+        // Check if the collaborator's email already exists in the collaborators array
+        const isCollaboratorExist = note.collaborators.includes(collaboratorEmail);
+
+        if (isCollaboratorExist) {
+           return res.status(400).send('Collaborator already exists.');
+        }
+
+        note.collaborators.push(collaboratorEmail);
+
+        const result = await note.save();
+        res.json(result);
+    }   
+    catch(err)
+    {
+        console.log(err);
+        res.status(500).send("Some error occure.");
+    }
+}
+
+exports.removeNoteCollaborators = async(req,res) => {
+    try{
+
+        const note = await noteModel.Note.findById(req.params.id);
+        //if note not found then do not allow user to go further
+        if(!note)
+            return res.status(404).send("Note not found");
+
+        // if(note.userID.toString() !== req.userID)
+        //     return res.status(401).send("Not allowed to update.");
+            
+        const collaboratorEmail = req.body.email;
+        // Check if the collaborator exists in the collaborators array
+        const collaboratorIndex = note.collaborators.indexOf(collaboratorEmail);
+
+        if(collaboratorIndex===-1)
+            return res.status(400).send("Collaborator not found.")
+
+        note.collaborators.splice(collaboratorIndex,1);
+
+        const result = await note.save();
+        res.json(result);
+    }
+    catch(err)
+    {
+        console.log(err);
+        res.status(500).send("Some error occure.")
     }
 }
 

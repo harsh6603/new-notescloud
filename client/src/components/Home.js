@@ -7,6 +7,10 @@ import { useLocation } from 'react-router-dom';
 import Write from './Write';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Button from 'react-bootstrap/Button';
+import { Modal } from 'react-bootstrap';
+import { Formik } from 'formik';
+import { collaboratorSchema } from '../schemas';
 
 export default function Home() {
 
@@ -22,12 +26,12 @@ export default function Home() {
     }
 
     //reference of close button of modal in mobile view
-    const backBtn = useRef(null);
+    const backBtn = useRef(null);    
 
     const currentDate = new Date();
     const Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    const x = window.matchMedia("(max-width: 500px)");
+    const x = window.matchMedia("(max-width: 1000px)");
 
     // let navigate = useNavigate();
 
@@ -46,9 +50,17 @@ export default function Home() {
     // //State for display all title,tag and description in note
     // const [toggle, setToggle] = useState("close");
 
+    //store initial title,tag and descripton of note
+    const [initialNote,setInitialNote] = useState({
+        title:"",
+        tag:"",
+        description:""
+    })
+
     //State for storing note which want to update
     const [wantToUpdate, setWantToUpdate] = useState({
         editNoteId: "",
+        userId:"",
         editTitle: "",
         editTag: "",
         editDescription: "",
@@ -56,6 +68,8 @@ export default function Home() {
         editLabel: "",
         editArchive: false,
         editDeleted: false,
+        editCollaborators:[],
+        editBackground:"",
         editRestoreDate: new Date(),
     });
 
@@ -113,7 +127,7 @@ export default function Home() {
         const updatedData = {
             title: updatedTitle.value,
             tag: updatedTag.value,
-            description: updatedDescription.value,
+            description: updatedDescription.value,            
             date: Date.now()
         }
         context.updateNote(updatedData, wantToUpdate.editNoteId, onlyNameOfTab);
@@ -152,15 +166,25 @@ export default function Home() {
     //function call when user clicked on div for update
     const updateNote = (clickedNote) => {
         console.log(clickedNote);
+        setBackgroundColor(clickedNote.background);
+        setInitialBackground(clickedNote.background);
+        setInitialNote({
+            title:clickedNote.title,
+            tag:clickedNote.tag,
+            description:clickedNote.description
+        })
         setWantToUpdate({
             editNoteId: clickedNote._id,
+            userId:clickedNote.userID,
             editTitle: clickedNote.title,
             editTag: clickedNote.tag,
             editDescription: clickedNote.description,
             editDate: new Date(clickedNote.date),
             editLabel: clickedNote.label,
             editDeleted: clickedNote.deleted,
-            editRestoreDate: new Date(),
+            editCollaborators: clickedNote.collaborators,
+            editBackground:clickedNote.background,
+            editRestoreDate: new Date(),            
             editArchive: clickedNote.archive
         });
         console.log(wantToUpdate);
@@ -188,12 +212,34 @@ export default function Home() {
     }
 
     //update deleted value to true for that note in database
-    const deleteNote = (deleteNoteId) => {
+    const deleteAfterConfirm = (deleteNoteId) => {
+        if(showUpdateEventModal)
+        {
+            handleHideDeleteNoteModal()
+            handleHideUpdateModal()
+        }
+        else
+            handleHideDeleteNoteModal();
+
         const updatedData = {
+            collaborators:[userEmail],
             deleted: true
         }
         context.updateNote(updatedData, deleteNoteId, onlyNameOfTab);
-        x.matches && backBtn.current.click()
+        // x.matches && backBtn.current.click()
+    }
+
+    const [deleteNoteId,setDeleteNoteId] = useState(null);
+
+    //check if more then 1 collaborator are there then ask conformation for delete
+    const deleteNote = (deleteNoteId,length) => {
+        setDeleteNoteId(deleteNoteId);
+        //if there are more then 1 collaborator then open confirm delete modal
+        if(length>1)        
+            deleteNoteRef.current.click();        
+        else        
+            deleteAfterConfirm(deleteNoteId);        
+
     }
 
     //delete note forever
@@ -206,6 +252,7 @@ export default function Home() {
     const restoreNote = (restoreNoteId) => {
         const updatedData = {
             deleted: false,
+            collaborators:[userEmail],
             restoreDate: new Date()
         }
         context.updateNote(updatedData, restoreNoteId, onlyNameOfTab);
@@ -222,6 +269,7 @@ export default function Home() {
             deleted: copyNoteData.deleted,
             archive: copyNoteData.archive,
             label: copyNoteData.label,
+            collaborators:[userEmail],
             date: new Date(),
             restoreDate: new Date()
         }
@@ -232,9 +280,10 @@ export default function Home() {
             deleted: copyNoteData.editDeleted,
             archive: copyNoteData.editArchive,
             label: copyNoteData.editLabel,
+            collaborators:[userEmail],
             date: new Date(),
             restoreDate: new Date()
-        }
+        }        
         context.addNotes(data, onlyNameOfTab);
         if (x.matches) {
             context.addNotes(dataForMobileView, onlyNameOfTab);
@@ -288,7 +337,8 @@ export default function Home() {
 
     const breakpointColumnsObj = {
         default: 5,
-        500: 3,
+        1000:4,
+        500: 2,
         400: 2,
         200: 1
     };
@@ -317,6 +367,300 @@ export default function Home() {
         })
     }
 
+    //for note modal open and close
+
+    const [showUpdateEventModal, setShowUpdateEventModal] = useState(false);
+
+    const handleShowUpdateModal = () => {
+        window.history.pushState({}, "", "#open-modal");
+        setShowUpdateEventModal(true);
+    }
+
+    const handleHideUpdateModal = () => {
+        //if title,tag or description update then run code which is written inside if statement
+
+        let compareTitle = (initialNote.title).localeCompare(wantToUpdate.editTitle)
+        let compareTag = (initialNote.tag).localeCompare(wantToUpdate.editTag)
+        let compareDescription = (initialNote.description).localeCompare(wantToUpdate.editDescription)
+
+        if(compareTitle || compareTag || compareDescription)
+            handleUpdate();
+        window.history.back();
+    }
+
+    // useEffect(() => {
+    //     function handlePopState(event) {
+    //         if (showUpdateEventModal)
+    //             setShowUpdateEventModal(false);
+    //     }
+
+    //     window.addEventListener("popstate", handlePopState);
+
+    //     return () => {
+    //         window.removeEventListener("popstate", handlePopState);
+    //     }
+    // }, [showUpdateEventModal])
+
+    //end of modal related code
+    
+    // let userName = localStorage.getItem("userName");
+    let id = localStorage.getItem("id");
+    let userEmail = localStorage.getItem("userEmail");    
+
+    //code for Collaborator       
+
+    const collaboratorRef = useRef(null);
+
+    const collaborator = (note) => {
+        
+        let selectNote=note;
+        if(!note.collaborators)
+        {
+            selectNote={
+                _id: note.editNoteId,
+                title: note.editTitle,
+                tag: note.editTag,
+                description: note.editDescription,
+                date: note.editDate,
+                label: note.editLabel,
+                deleted: note.editDeleted,
+                collaborators: note.editCollaborators,
+                restoreDate: note.editRestoreDate,
+                archive: note.editArchive,                
+            }        
+        }        
+        context.setSelectedNote(selectNote);
+        context.setselectedNoteId(selectNote._id);
+        context.setCollaborators(selectNote.collaborators);
+        collaboratorRef.current.click();
+    }
+
+    const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+
+    const handleShowCollaboratorModal = () => {
+        window.history.pushState({}, "", "/#open-modal/#open-collaborator");
+        setShowCollaboratorModal(true);
+    }
+
+    const handleHideCollaboratorModal = () => {
+        window.history.back();
+    }
+
+    //code for delete note modal
+    const deleteNoteRef = useRef(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const handleShowDeleteNoteModal = () => {
+        window.history.pushState({}, "", "/#open-modal/#open-deleteNote");
+        setShowDeleteModal(true);
+    }
+
+    const handleHideDeleteNoteModal = () => {
+        window.history.back();
+    }
+
+    //code related to select background color modal
+
+    const colorOptions = ['red', 'orange', 'yellow', 'green','teal','blue','darkBlue','purple','pink','brown','gray'];
+
+    const colors = new Map([
+        ["dark","#202124"],
+        ["white",""],
+        ["red",`${(context.mode === "white")?"#f28b82":"#5c2b29"}`],
+        ["orange",`${(context.mode === "white")?"#fbbc04":"#614a19"}`],
+        ["yellow",`${(context.mode === "white")?"#fff475":"#635d19"}`],
+        ["green",`${(context.mode === "white")?"#ccff90":"#345920"}`],
+        ["teal",`${(context.mode === "white")?"#a7ffeb":"#16504b"}`],
+        ["blue",`${(context.mode === "white")?"#a7ffeb":"#2d555e"}`],
+        ["darkBlue",`${(context.mode === "white")?"#aecbfa":"#1e3a5f"}`],
+        ["purple",`${(context.mode === "white")?"#d7aefb":"#42275e"}`],
+        ["pink",`${(context.mode === "white")?"#fdcfe8":"#5b2245"}`],
+        ["brown",`${(context.mode === "white")?"#e6c9a8":"#442f19"}`],
+        ["gray",`${(context.mode === "white")?"#e8eaed":"#3c3f43"}`]
+    ])
+
+    const [backgroundColor, setBackgroundColor] = useState('default');
+
+    const [initialBackground,setInitialBackground] = useState('default');
+
+    const [card,setCard] = useState(null);
+
+    //for desktop view(bahar option batave che amathi)
+    const handleColorChange = (color) => {
+
+        if(color!=="default")
+            card.style.backgroundColor=colors.get(color);
+        else    
+            card.style.backgroundColor="";
+        setBackgroundColor(color);                
+    };
+
+    //change modal color
+    const changeModalColor = (color) => {
+        setBackgroundColor(color);
+    }
+
+    //note modal no color change karva useEfect lakhelu che
+    useEffect(() => {
+
+        const noteModal = document.getElementsByClassName("styleModal"); 
+        if(noteModal[0])
+        {            
+            noteModal[0].childNodes[0].style.borderColor=(context.mode==="dark")?"rgb(95, 99, 104)":"";
+            // console.log(noteModal[0].childNodes[0]);        
+            if(backgroundColor==="default")
+                noteModal[0].childNodes[0].style.backgroundColor=colors.get(context.mode);
+            else    
+                noteModal[0].childNodes[0].style.backgroundColor=colors.get(backgroundColor);
+        }    
+        // eslint-disable-next-line
+    },[backgroundColor,showUpdateEventModal])
+
+    const colorModalBtnRef = useRef(null); 
+
+    //aa function note par hover karia tyare je option batave che amathi color no option select kar ena mate che
+    const selectColor = (selectNote,target) => {        
+        // console.log(target.parentElement.parentElement.parentElement.parentElement);
+        let cardElement=target;        
+        while(1)
+        {            
+            if(cardElement.id)
+            {
+                if(cardElement.id==="cards")
+                {
+                    break;
+                }
+                else
+                {
+                    cardElement=cardElement.parentElement;
+                }
+            }
+            else
+                cardElement=cardElement.parentElement;
+        }        
+        // cardElement = target.parentElement.parentElement.parentElement.parentElement;
+        setCard(cardElement);
+        setBackgroundColor(selectNote.background);
+        setInitialBackground(selectNote.background);        
+        context.setselectedNoteId(selectNote._id);
+        colorModalBtnRef.current.click();        
+    }
+
+    const selectColorFromDropdown = (note) => {
+        context.setselectedNoteId(note.editNoteId);                        
+        colorModalBtnRef.current.click();
+    }
+
+    const [showColors,setShowColors] = useState(false);
+    
+    const handleShowColorsModal = () => {
+        window.history.pushState({}, "", "/#open-modal/#open-color");
+        setShowColors(true);
+    }
+
+    const handleHideColorsModal = () => {        
+        if(initialBackground!==backgroundColor)
+        {
+            context.updateColor({background:backgroundColor},onlyNameOfTab)            
+            setInitialBackground(backgroundColor);
+        }
+        window.history.back();
+    }
+
+    useEffect(() => {
+        function handlePopState(event) {
+            if(showDeleteModal){
+                setShowDeleteModal(false);
+            }
+            else if(showColors){
+                setShowColors(false);
+            }   
+            else if (showCollaboratorModal) {
+                setShowCollaboratorModal(false);
+            } else if(showUpdateEventModal) {
+                setShowUpdateEventModal(false);
+            }
+        }
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        }
+        // eslint-disable-next-line
+    }, [showCollaboratorModal,showUpdateEventModal,showDeleteModal,showColors])
+
+    //remove collaborator
+    const removeCollaborator = (email) => {
+
+        if(email === userEmail)
+        {
+            if(showUpdateEventModal)
+            {
+                handleHideCollaboratorModal();
+                handleHideUpdateModal();
+            }
+            else    
+                handleHideCollaboratorModal();
+        }
+
+        const data = {
+            email:email
+        }
+
+        context.removeNoteCollaborators(data,onlyNameOfTab);
+    }            
+    
+    //code related to formik
+    const initialEmail = {
+        email:""        
+    };     
+
+    const [err,setErr] = useState("");
+
+    const onSubmit = (values,{resetForm}) => {
+        // console.log(values);            
+        let email = values.email;
+        let isEmailExist = context.collaborators.includes(email);
+        // console.log(isEmailExist);        
+
+        if(!isEmailExist)
+        {
+            setErr("");
+            context.updateNoteCollaborators(values,onlyNameOfTab);                                
+            resetForm({values:""});
+        }
+        else
+        {
+            setErr("This email already exists.")        
+            setTimeout(() => {
+                setErr("");
+            }, 3000);
+        }
+    }    
+
+    //for dropdown menu in mobile view
+    const displayDropdown = () => {
+
+        const mydropdown = document.getElementById("mydropdown");
+        mydropdown.style.display="block";
+    }            
+
+    const closeDropdown = () => {
+        const mydropdown = document.getElementById("mydropdown");
+        mydropdown.style.display="none";
+    }
+
+    window.onclick = function(e){
+        const mydropdown = document.getElementById("mydropdown");        
+        const outsideOfDropdown = document.getElementById("outsideOfDropdown");        
+
+        if(e.target === outsideOfDropdown)
+        {
+            mydropdown.style.display="none";
+        }        
+    }    
+
     return (
         <>
             {(location.pathname !== "/archive" && location.pathname !== "/trash") &&
@@ -338,7 +682,7 @@ export default function Home() {
                 //                 <input type="text" className="form-control" id="description" name="description" />
                 //             </div> */}
                 //             <div className="mainBox mt-4" id="mainBox">
-                //                 {/* <div class="images">
+                //                 {/* <div className="images">
                 //                     {state.images.map(image => (
                 //                         <img className="imageItem" src={image} alt="preview"/>
                 //                     ))}
@@ -364,13 +708,359 @@ export default function Home() {
                 // </div>
             }
 
-            <button ref={ref} style={{ display: "none" }} type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Launch demo modal
-            </button>
+            {/* Modal for select background color */}
+            <Button ref={colorModalBtnRef} className='d-none' variant='primary' onClick={handleShowColorsModal} />
 
+            <Modal
+                show={showColors}
+                animation={false}
+                onHide={handleHideColorsModal}
+                centered
+            >
+                <Modal.Body>
+                    <div className='color-options'>
+                        <button style={{height:"25px",width:"25px",display:"flex",padding:(backgroundColor==="default")?"4px":"6px" , border:(backgroundColor==="default")?"3px solid rebeccapurple":""}} title='default' className='color-option' onClick={() => {(x.matches)? changeModalColor("default") : handleColorChange("default")}}>
+                            <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 24 24" id="IconChangeColor" height="13" width="13"><path d="M21.71,20.29l-18-18A1,1,0,0,0,2.29,3.71l4,4a12.46,12.46,0,0,0-2,6.57A7.76,7.76,0,0,0,12,22a7.64,7.64,0,0,0,5.87-2.71l2.42,2.42a1,1,0,0,0,1.42,0A1,1,0,0,0,21.71,20.29ZM12,20a5.76,5.76,0,0,1-5.75-5.75A10.3,10.3,0,0,1,7.72,9.14l8.74,8.73A5.67,5.67,0,0,1,12,20ZM10.85,5.24c.45-.42.85-.75,1.15-1,1.43,1.12,5.13,4.43,5.68,8.88a1,1,0,0,0,1,.88h.12a1,1,0,0,0,.87-1.11c-.78-6.43-6.85-10.55-7.1-10.72a1,1,0,0,0-1.12,0A18.73,18.73,0,0,0,9.49,3.78a1,1,0,0,0,1.36,1.46Z" id="mainIconPathAttribute" strokeWidth="0" stroke="#ff0000"></path></svg>
+                        </button>
+                        {          
+                            colorOptions &&                  
+                            colorOptions.map((color) => {
+                                return <button 
+                                    title={color}
+                                    key={color}
+                                    className={`color-option ${color}`}
+                                    style={{border:(backgroundColor===color)?"3px solid rebeccapurple":"",backgroundColor:colors.get(color)}}
+                                    onClick={() => {(x.matches)? changeModalColor(color) : handleColorChange(color)}}
+                                />                                
+                            })
+                        }
+                    </div>
+                </Modal.Body>
+            </Modal>
+
+            {/* modal for delete conformation if more than 1 collaborators are there */}
+            <Button ref={deleteNoteRef} className='d-none' variant='primary' onClick={handleShowDeleteNoteModal} />            
+
+            <Modal
+                show={showDeleteModal}
+                animation={false}
+                onHide={handleHideDeleteNoteModal}
+                // fullscreen={"sm-down"}
+                centered
+            >            
+                <Modal.Body>
+                    <p>Delete note?</p>
+                    <p>Deleted note won't be visible to anyone that you shared the note with.</p>
+                    <div className='d-flex justify-content-end'>
+                        <p 
+                            style={{cursor:"pointer",paddingRight:"5%"}} 
+                            onClick={handleHideDeleteNoteModal}
+                        >
+                            Cancel
+                        </p>
+                        <p 
+                            style={{cursor:"pointer",paddingRight:"5%",color:"dodgerblue",fontWeight:"500"}}
+                            onClick={() => {deleteAfterConfirm(deleteNoteId)} }
+                        >
+                            Delete
+                        </p>
+                    </div>
+                </Modal.Body>                
+            </Modal>
+
+            {/* Modal for collaborator */}
+            <Button ref={collaboratorRef} className='d-none' variant='primary' onClick={handleShowCollaboratorModal} >
+
+            </Button>
+
+            <Modal
+                show={showCollaboratorModal}
+                animation={false}
+                onHide={handleHideCollaboratorModal}
+                fullscreen={"sm-down"}
+                centered                
+            >
+                <Modal.Header>
+                    <b>Collaborators</b>
+                </Modal.Header>
+
+                <Modal.Body>
+                    <div className='d-grid gap-3'>
+                        {/* <div className='d-flex justify-content-start '>
+                            <div className='collaboratorName'>
+                                <i id="" style={{fontWeight: "bolder", fontSize: "16px" }} className={`fa-solid fa-${(firstLetterOfUserName) && firstLetterOfUserName.toLowerCase()}`} aria-hidden="true"></i>
+                            </div>
+                            <div style={{paddingTop:'5px',fontSize:"14px"}}>
+                                <b>{userEmail}</b>
+                                <small> (owner)</small>
+                            </div>
+                        </div> */}
+                        {
+                            (context.selectedNoteId && context.collaborators) &&
+                            context.collaborators.map((collaboratorEmail,index) => {
+
+                                let firstLetterOfCollaborator = collaboratorEmail.charAt(0).toLowerCase();
+
+                                if(index===0)
+                                {
+                                    return <div key={collaboratorEmail} className='d-flex justify-content-start '>
+                                        <div className='collaboratorName'>
+                                            <i id="" style={{fontWeight: "bolder", fontSize: "16px" }} className={`fa-solid fa-${(firstLetterOfCollaborator) && firstLetterOfCollaborator.toLowerCase()}`} aria-hidden="true"></i>
+                                        </div>
+                                        <div style={{paddingTop:'5px',fontSize:"14px"}}>
+                                            <b>{collaboratorEmail}</b>
+                                            <small> (owner)</small>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    return <div key={collaboratorEmail} className='d-flex justify-content-start '>
+                                        <div className='collaboratorName'>
+                                            <i id="" style={{fontWeight: "bolder", fontSize: "16px" }} className={`fa-solid fa-${(firstLetterOfCollaborator) && firstLetterOfCollaborator.toLowerCase()}`} aria-hidden="true"></i>
+                                        </div>
+                                        <div style={{paddingTop:'5px',fontSize:"14px",width:"100%"}}>
+                                            <div className='d-flex justify-content-start'>
+                                                <div style={{width:"100%"}}>
+                                                    <b style={{fontWeight:"normal"}}>{collaboratorEmail}</b>                                        
+                                                </div>
+                                                <div>
+                                                    <button style={{border:"none",outline:"none",background:"none"}} type='submit' onClick={() => {removeCollaborator(collaboratorEmail)}}> 
+                                                        <i 
+                                                            style={{color:"gray",fontSize:"14px"}} 
+                                                            className="fas fa-times"
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            })
+                        }
+                        <div className='d-flex justify-content-start'>                            
+                            <div className='addCollaboratorIcon'>    
+                                {/* <svg width="21px" height="21px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 11C10.2091 11 12 9.20914 12 7C12 4.79086 10.2091 3 8 3C5.79086 3 4 4.79086 4 7C4 9.20914 5.79086 11 8 11ZM8 9C9.10457 9 10 8.10457 10 7C10 5.89543 9.10457 5 8 5C6.89543 5 6 5.89543 6 7C6 8.10457 6.89543 9 8 9Z" fill="currentColor" /><path d="M11 14C11.5523 14 12 14.4477 12 15V21H14V15C14 13.3431 12.6569 12 11 12H5C3.34315 12 2 13.3431 2 15V21H4V15C4 14.4477 4.44772 14 5 14H11Z" fill="currentColor" /><path d="M18 7H20V9H22V11H20V13H18V11H16V9H18V7Z" fill="currentColor" /></svg>                                 */}
+                                <i style={{ fontSize: "16px", color:(context.mode === "white")?"gray":"gray" }} id="copy" title="Collaborator" className="fas fa-user-plus" onClick={(e) => { e.stopPropagation(); }} ></i>
+                            </div>
+                            <div style={{paddingTop:"5px",width:"100%"}}>
+                                <Formik 
+                                    initialValues={initialEmail}
+                                    validationSchema={collaboratorSchema}
+                                    validateOnChange={false}
+                                    validateOnBlur={false}        
+                                    enableReinitialize                              
+                                    onSubmit={onSubmit}
+                                >
+                                    {({
+                                        values,
+                                        errors,    
+                                        resetForm,                                    
+                                        handleBlur,
+                                        handleChange,
+                                        handleSubmit
+                                    }) => (
+                                        <form onSubmit={handleSubmit} noValidate>
+                                            <div className='d-flex justify-content-start'>
+                                                <div style={{width:"100%"}}>
+                                                    <input 
+                                                        type="email"                                                         
+                                                        className="collaboratorEmail" 
+                                                        placeholder= "Enter email to share with"                                                 
+                                                        id="email" 
+                                                        name="email"
+                                                        value={values.email}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                    />
+                                                </div>                                                
+                                                {
+                                                    values.email&&
+                                                    <div>
+                                                        <button style={{border:"none",outline:"none",background:"none"}} type='submit'> 
+                                                            <i 
+                                                                style={{cursor:"pointer",color:"gray",fontSize:"14px"}} 
+                                                                className="fas fa-check"                                                             
+                                                            />                                                    
+                                                        </button>
+                                                    </div>
+                                                }
+                                            </div>
+                                            {
+                                                (values.email && (errors.email || err.length!==0)) &&
+                                                (err.length===0)
+                                                ?
+                                                <small id='emailError' style={{position:"absolute",color:"red",fontSize:"12px"}}> {errors.email} </small>                                                                                                
+                                                :
+                                                <small id='emailError' style={{position:"absolute",color:"red",fontSize:"12px"}}> {err} </small>                                                                                                
+                                            }                                                                                
+                                        </form>
+                                    )                                    
+                                    }
+                                </Formik>
+                            </div>
+                        </div>
+                    </div>
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <div style={{cursor:"pointer"}} onClick={handleHideCollaboratorModal}>
+                        <div>Cancel</div>
+                    </div>
+                </Modal.Footer>
+
+            </Modal>
+
+            {/* Modal for note display */}
+            <Button ref={ref} className='d-none' variant='primary' onClick={handleShowUpdateModal} >
+
+            </Button>
+
+            {/* <button ref={ref} style={{ display: "none" }} type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Launch demo modal
+            </button> */}
+
+            <Modal
+
+                show={showUpdateEventModal}
+                // keyboard={false}                                
+                animation={false}             
+                dialogClassName='styleModal'
+                onHide={handleHideUpdateModal}
+                centered                
+                fullscreen={"sm-down"}
+            >
+                {
+                    x.matches &&                
+                        <Modal.Header style={{display:"unset",border:"none",color:(context.mode==="white")?"black":"white" ,backgroundColor:(backgroundColor!=="default")?colors.get(backgroundColor):colors.get(context.mode)}}>
+                            <div className='d-flex justify-content-between'>
+                                {/* <div> */}
+                                    <i ref={backBtn} style={{fontSize:"17px"}} data-bs-dismiss="modal" className="fa-solid fa-arrow-left" onClick={handleHideUpdateModal}></i>
+                                {/* </div> */}
+                                <div className='d-flex justify-content-start'>
+                                    {
+                                        (onlyNameOfTab !== "trash") &&
+                                            // <i style={{ cursor: "pointer", fontSize: "16px", margin: "0 10px" }} id="copy" title="Copy Note" className="fa-regular fa-clone" onClick={(e) => { copyNote(wantToUpdate); e.stopPropagation(); }} ></i>
+                                            // <svg style={{ margin: "0px 10px" }} onClick={(e) => { copyNote(wantToUpdate); e.stopPropagation(); }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="IconChangeColor" height="18" width="18"> <path fill="var(--ci-primary-color, currentColor)" d="M472,16H160a24.027,24.027,0,0,0-24,24V352a24.027,24.027,0,0,0,24,24H472a24.027,24.027,0,0,0,24-24V40A24.027,24.027,0,0,0,472,16Zm-8,328H168V48H464Z" className="ci-primary" id="mainIconPathAttribute" strokeWidth="2" stroke="#000000"></path> <path fill="var(--ci-primary-color, currentColor)" d="M344,464H48V168h56V136H40a24.027,24.027,0,0,0-24,24V472a24.027,24.027,0,0,0,24,24H352a24.027,24.027,0,0,0,24-24V408H344Z" className="ci-primary" id="mainIconPathAttribute" stroke="#000000"></path> </svg>
+                                            <svg style={{ margin: "0px 10px" }} fill="currentColor" onClick={(e) => { copyNote(wantToUpdate); e.stopPropagation(); }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" id="IconChangeColor" height="18" width="18"><path d="M6 6V2c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4v4a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h4zm2 0h4a2 2 0 0 1 2 2v4h4V2H8v4zM2 8v10h10V8H2z" id="mainIconPathAttribute" stroke="currentColor" strokeWidth="0"></path></svg>
+                                    }
+                                    {                                                                               
+                                        (onlyNameOfTab === "trash")
+                                            ?
+                                            <i style={{ cursor: "pointer", fontSize: "18px", margin: "0 10px" }} id="delete" title="Delete Forever" className="fa fa-trash-o" onClick={(e) => { deleteClickedNote(wantToUpdate.editNoteId); e.stopPropagation(); }} ></i>
+                                            :
+                                            (wantToUpdate.editCollaborators.length<=1 || wantToUpdate.userId === id)&& 
+                                            <i style={{ cursor: "pointer", fontSize: "18px", margin: "0 10px" }} id="delete" title="Delete" className="fa fa-trash-o" onClick={(e) => { deleteNote(wantToUpdate.editNoteId,wantToUpdate.editCollaborators.length); e.stopPropagation(); }} ></i>
+                                    }
+
+                                    {
+                                        (onlyNameOfTab === "archive")
+                                            ?
+                                            <svg style={{ margin: "-3px 10px" }} onClick={(e) => { unArchiveNote(wantToUpdate.editNoteId); e.stopPropagation(); }} fill="currentColor" height="22px" viewBox="0 0 24 24" width="22px" xmlns="http://www.w3.org/2000/svg"><path d="m21.706 5.292-2.999-2.999A.996.996 0 0 0 18 2H6a.996.996 0 0 0-.707.293L2.294 5.292A.994.994 0 0 0 2 6v13c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6a.994.994 0 0 0-.294-.708zM6.414 4h11.172l1 1H5.414l1-1zM4 19V7h16l.002 12H4z"/><path d="M7 14h3v3h4v-3h3l-5-5z"/></svg>
+                                            :
+                                            (onlyNameOfTab === "trash")
+                                                ?
+                                                <i style={{ cursor: "pointer", fontSize: "16px", margin: "0 10px" }} id="restore" title="Restore Note" className="fa-solid fa-trash-arrow-up" onClick={(e) => { restoreNote(deletedNote.deletedNoteId); e.stopPropagation(); }}></i>
+                                                :
+                                                (wantToUpdate.editLabel !== "false" && wantToUpdate.editArchive === true)
+                                                    ?
+                                                    <svg style={{ margin: "-3px 10px" }} onClick={(e) => { unArchiveNote(wantToUpdate.editNoteId); e.stopPropagation(); }} fill="currentColor" height="22px" viewBox="0 0 24 24" width="22px" xmlns="http://www.w3.org/2000/svg"><path d="m21.706 5.292-2.999-2.999A.996.996 0 0 0 18 2H6a.996.996 0 0 0-.707.293L2.294 5.292A.994.994 0 0 0 2 6v13c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6a.994.994 0 0 0-.294-.708zM6.414 4h11.172l1 1H5.414l1-1zM4 19V7h16l.002 12H4z"/><path d="M7 14h3v3h4v-3h3l-5-5z"/></svg>
+                                                    :
+                                                    <svg style={{ margin: "-3px 10px" }} onClick={(e) => { archiveNote(wantToUpdate.editNoteId); e.stopPropagation(); }} fill="currentColor" height="22px" viewBox="0 0 24 24" width="22px" xmlns="http://www.w3.org/2000/svg"><path d="m21.706 5.292-2.999-2.999A.996.996 0 0 0 18 2H6a.996.996 0 0 0-.707.293L2.294 5.292A.994.994 0 0 0 2 6v13c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6a.994.994 0 0 0-.294-.708zM6.414 4h11.172l1 1H5.414l1-1zM4 19V7h16l.002 12H4z" /><path d="M14 9h-4v3H7l5 5 5-5h-3z" /></svg>
+                                    }
+                                    {           
+                                        (onlyNameOfTab !== "trash") &&                             
+                                        <div className="dropdown">
+                                            <i style={{ cursor: "pointer", fontSize: "20px", margin: "0 0 0 10px" }} onClick={displayDropdown} id="dropdownMenu" className="fa-solid fa-ellipsis-vertical"></i>
+                                            {/* <span id="dropdownMenu">&#x22EE;</span> */}
+                                            <div id="mydropdown" className='dropdownlist'>
+                                                <div id={"outsideOfDropdown"} className='backOfModal'></div>
+                                                <ul id="dropdown-menu" className="dropdown-menu" aria-labelledby="dropdownMenu" onClick={closeDropdown} >
+                                                    <li className="dropdown-item" >
+                                                        <div className='d-flex justify-content-start' onClick={(e) => {collaborator(wantToUpdate);}}>
+                                                            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M8 11C10.2091 11 12 9.20914 12 7C12 4.79086 10.2091 3 8 3C5.79086 3 4 4.79086 4 7C4 9.20914 5.79086 11 8 11ZM8 9C9.10457 9 10 8.10457 10 7C10 5.89543 9.10457 5 8 5C6.89543 5 6 5.89543 6 7C6 8.10457 6.89543 9 8 9Z" fill="currentColor" /><path d="M11 14C11.5523 14 12 14.4477 12 15V21H14V15C14 13.3431 12.6569 12 11 12H5C3.34315 12 2 13.3431 2 15V21H4V15C4 14.4477 4.44772 14 5 14H11Z" fill="currentColor" /><path d="M18 7H20V9H22V11H20V13H18V11H16V9H18V7Z" fill="currentColor" /></svg>
+                                                            <p style={{paddingLeft:"6%"}}>Collaborators</p>
+                                                        </div>                                                        
+                                                    </li>
+                                                    <li className="dropdown-item" >
+                                                        <div className='d-flex justify-content-start' onClick={(e) => {selectColorFromDropdown(wantToUpdate)}}>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" viewBox="0 0 512 512" id="IconChangeColor"><path d="M430.11,347.9c-6.6-6.1-16.3-7.6-24.6-9-11.5-1.9-15.9-4-22.6-10-14.3-12.7-14.3-31.1,0-43.8l30.3-26.9c46.4-41,46.4-108.2,0-149.2-34.2-30.1-80.1-45-127.8-45-55.7,0-113.9,20.3-158.8,60.1-83.5,73.8-83.5,194.7,0,268.5,41.5,36.7,97.5,55,152.9,55.4h1.7c55.4,0,110-17.9,148.8-52.4C444.41,382.9,442,359,430.11,347.9Z" stroke='currentColor' fill={"white"} strokeMiterlimit={10} strokeWidth={"32px"} id="mainIconPathAttribute"></path><circle cx="144" cy="208" r="32"></circle><circle cx="152" cy="311" r="32"></circle><circle cx="224" cy="144" r="32"></circle><circle cx="256" cy="367" r="48"></circle><circle cx="328" cy="144" r="32"></circle></svg>                                    
+                                                            {/* <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M8 11C10.2091 11 12 9.20914 12 7C12 4.79086 10.2091 3 8 3C5.79086 3 4 4.79086 4 7C4 9.20914 5.79086 11 8 11ZM8 9C9.10457 9 10 8.10457 10 7C10 5.89543 9.10457 5 8 5C6.89543 5 6 5.89543 6 7C6 8.10457 6.89543 9 8 9Z" fill="currentColor" /><path d="M11 14C11.5523 14 12 14.4477 12 15V21H14V15C14 13.3431 12.6569 12 11 12H5C3.34315 12 2 13.3431 2 15V21H4V15C4 14.4477 4.44772 14 5 14H11Z" fill="currentColor" /><path d="M18 7H20V9H22V11H20V13H18V11H16V9H18V7Z" fill="currentColor" /></svg> */}
+                                                            <p style={{paddingLeft:"6%"}}>Background Options</p>
+                                                        </div>                                                        
+                                                    </li>
+                                                    {/* <li className="dropdown-item" >Add Color</li> */}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>                    
+                        </Modal.Header>                        
+                }
+                <Modal.Body style={{color:(context.mode==="white")?"black":"white",backgroundColor:(backgroundColor!=="default")?colors.get(backgroundColor):colors.get(context.mode)}}>
+                <form>
+                    <div className="mt-1">
+                        {
+                            onlyNameOfTab !== "trash" ?
+                                <input type="text" style={{ fontWeight: "bold",backgroundColor:"inherit",color:"inherit" }} className="form-control1" value={wantToUpdate.editTitle} id="editTitle" name="editTitle" onInput={assignNewValue} />
+                                :
+                                <input type="text" style={{ fontWeight: "bold",backgroundColor:"inherit",color:"inherit" }} className="form-control1" value={deletedNote.deletedTitle} id="deletedTitle" name="deletedTitle" readOnly onClick={displayAlert} />
+                        }
+                    </div>
+                    <hr />
+                    <div>
+                        {
+                            onlyNameOfTab !== "trash" ?
+                                <input type="text" style={{backgroundColor:"inherit",color:"inherit"}} className="form-control1" value={wantToUpdate.editTag} placeholder={(wantToUpdate.editTag) ? " " : "Tag"} id="editTag" name="editTag" onInput={assignNewValue} />
+                                :
+                                <input type="text" style={{backgroundColor:"inherit",color:"inherit"}} className="form-control1" value={deletedNote.deletedTag} placeholder={(deletedNote.deletedTag) ? " " : "No Tag is given"} id="deletedTag" name="deletedTag" readOnly onClick={displayAlert} />
+                        }
+                    </div>
+                    <hr />
+                    <div className="mx-1 mb-2">
+                        {
+                            onlyNameOfTab !== "trash" ?
+                                <textarea type="text" style={{backgroundColor:"inherit",color:"inherit"}} className="textControl" value={wantToUpdate.editDescription} id="editDescription" name="editDescription" onChange={assignNewValue}></textarea>
+                                :
+                                <textarea type="text" style={{color:"inherit", height: "260px",backgroundColor:"inherit" }} className="textControl" value={deletedNote.deletedDescription} id="deletedDescription" name="deletedDescription" readOnly onClick={displayAlert}></textarea>
+                        }
+                        {/* <ToastContainer toastStyle={{backgroundColor:"black",color:"white"}} icon={false} hideProgressBar closeButton={false} /> */}
+                    </div>
+                    {/* <button type="submit" className="btn btn-dark mx-2 mb-2">Update</button> */}
+                </form>
+                </Modal.Body>
+
+                <Modal.Footer style={{color:(context.mode==="white")?"black":"white",border:"none", display:"unset",backgroundColor:(backgroundColor!=="default")?colors.get(backgroundColor):colors.get(context.mode)}}>
+                {
+                    onlyNameOfTab !== "trash" ?
+                        <div className="d-flex justify-content-between">
+                            <div className=" d-flex justify-content-around">
+                                <button type="submit" style={{color:`${(context.mode === "white")?"green":"lightgreen"}`,fontWeight:"500"}} className="myBtn btn mx-2" onClick={handleUpdate}>Update</button>
+                                {(!x.matches) && <button ref={closeBtn} style={{color:(context.mode==="white")?"black":"white"}} type="button" className="myBtn btn" data-bs-dismiss="modal" onClick={handleHideUpdateModal} >Close</button>}
+                            </div>
+                            {/* <small>Edited {wantToUpdate.editDate.getHours() + ":" + ((wantToUpdate.editDate.getMinutes()<10)?"0"+wantToUpdate.editDate.getMinutes():wantToUpdate.editDate.getMinutes())}</small> */}
+                            <small>Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
+                        </div>
+                        :
+                        <div className="d-flex justify-content-between">
+                            <div className=" d-flex justify-content-around">
+                                {!x.matches && <button type="submit" className="btn btn-dark mx-2">Delete</button>}
+                                {/* <button type="submit" className="btn btn-dark mx-2">Restore</button> */}
+                                {/* <button ref={closeBtn} type="button" className="btn btn-dark" data-bs-dismiss="modal">Close</button> */}
+                            </div>
+                            {/* <small>Edited {deletedNote.deletedDate.getHours() + ":" + ((deletedNote.deletedDate.getMinutes()<10)?"0"+deletedNote.deletedDate.getMinutes():deletedNote.deletedDate.getMinutes())}</small> */}
+                            <small>Note In Trash &bull; Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
+                        </div>
+                }
+                </Modal.Footer>
+
+            </Modal>
+            
+            {/* juno modal no code che. */}
             {/* <!-- Modal --> */}
-            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down">
+            {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down"> */}
                     {/* <div className="modal-content">
                         <div className="modal-header">
                         <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
@@ -384,7 +1074,7 @@ export default function Home() {
                         <button type="button" className="btn btn-primary">Save changes</button>
                         </div>
                     </div> */}
-                    <div className="modal-content">
+                    {/* <div className="modal-content">
                         {x.matches &&
                             <div className="modal-header">
                                 <div className='d-flex justify-content-between'>
@@ -444,36 +1134,38 @@ export default function Home() {
                                             <textarea type="text" className="textControl" value={wantToUpdate.editDescription} id="editDescription" name="editDescription" onChange={assignNewValue}></textarea>
                                             :
                                             <textarea type="text" style={{ height: "260px" }} className="textControl" value={deletedNote.deletedDescription} id="deletedDescription" name="deletedDescription" readOnly onClick={displayAlert}></textarea>
-                                    }
+                                    } */}
                                     {/* <ToastContainer toastStyle={{backgroundColor:"black",color:"white"}} icon={false} hideProgressBar closeButton={false} /> */}
-                                </div>
+                                {/* </div> */}
                                 {/* <button type="submit" className="btn btn-dark mx-2 mb-2">Update</button> */}
-                            </form>
-                        </div>
-                        {
+                            {/* </form>
+                        </div> */}
+                        {/* {
                             onlyNameOfTab !== "trash" ?
                                 <div className="modal-footer d-flex justify-content-between">
                                     <div className=" d-flex justify-content-around">
                                         <button type="submit" className="btn btn-dark mx-2" onClick={handleUpdate}>Update</button>
                                         {(!x.matches) && <button ref={closeBtn} type="button" className="btn btn-dark" data-bs-dismiss="modal">Close</button>}
-                                    </div>
+                                    </div> */}
                                     {/* <small>Edited {wantToUpdate.editDate.getHours() + ":" + ((wantToUpdate.editDate.getMinutes()<10)?"0"+wantToUpdate.editDate.getMinutes():wantToUpdate.editDate.getMinutes())}</small> */}
-                                    <small>Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
+                                    {/* <small>Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
                                 </div>
                                 :
                                 <div className="modal-footer d-flex justify-content-between">
                                     <div className=" d-flex justify-content-around">
-                                        {!x.matches && <button type="submit" className="btn btn-dark mx-2">Delete</button>}
+                                        {!x.matches && <button type="submit" className="btn btn-dark mx-2">Delete</button>} */}
                                         {/* <button type="submit" className="btn btn-dark mx-2">Restore</button> */}
                                         {/* <button ref={closeBtn} type="button" className="btn btn-dark" data-bs-dismiss="modal">Close</button> */}
-                                    </div>
+                                    {/* </div> */}
                                     {/* <small>Edited {deletedNote.deletedDate.getHours() + ":" + ((deletedNote.deletedDate.getMinutes()<10)?"0"+deletedNote.deletedDate.getMinutes():deletedNote.deletedDate.getMinutes())}</small> */}
-                                    <small>Note In Trash &bull; Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
+                                    {/* <small>Note In Trash &bull; Edited {(currentDate.getFullYear() > wantToUpdate.editDate.getFullYear()) ? Months[wantToUpdate.editDate.getMonth()] + " " + wantToUpdate.editDate.getFullYear() : (currentDate.getMonth() > wantToUpdate.editDate.getMonth()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : (currentDate.getDate() > wantToUpdate.editDate.getDate()) ? wantToUpdate.editDate.getDate() + " " + Months[wantToUpdate.editDate.getMonth()] : ((wantToUpdate.editDate.getHours() > 12) ? (wantToUpdate.editDate.getHours() - 12) : wantToUpdate.editDate.getHours()) + ":" + ((wantToUpdate.editDate.getMinutes() < 10) ? "0" + wantToUpdate.editDate.getMinutes() : wantToUpdate.editDate.getMinutes()) + " " + ((wantToUpdate.editDate.getHours() > 11) ? "PM" : "AM")}</small>
                                 </div>
                         }
                     </div>
                 </div>
-            </div>
+            </div> */}
+            {/* juno modal no code pati gayo. */}
+
             <ToastContainer enableMultiContainer containerId={"outsideHome"} pauseOnFocusLoss={false} limit={1} toastStyle={{ backgroundColor: "black", color: "white" }} icon={false} hideProgressBar/>
             <div className={`${(context.mode === "white")?"lightTheme":"darkTheme"} ${(context.navbarWidth === "unclick") ? "marginForNavbarBefore" : "marginForNavbar"}`}>
                 <div className={`blankDiv1 ${(context.mode === "white")?"lightTheme":"darkTheme"}`}>
@@ -493,8 +1185,19 @@ export default function Home() {
                             >
                                 {
                                     context.note.map((storedNote) => {
-                                        return <div className='getDiv' key={storedNote._id} style={{ cursor: "default" }} onClick={(onlyNameOfTab !== "trash") ? () => { updateNote(storedNote) } : () => { displayNote(storedNote) }} >
-                                            <Note notes={storedNote} deleteNote={deleteNote} archiveNote={archiveNote} unArchiveNote={unArchiveNote} foreverDeleteNote={deleteClickedNote} restoreNote={restoreNote} copyNote={copyNote} />
+                                        return <div className='getDiv' key={storedNote._id} style={{ cursor: "default"}} onClick={(onlyNameOfTab !== "trash") ? () => { updateNote(storedNote) } : () => { displayNote(storedNote) }} >
+                                            <Note 
+                                                notes={storedNote} 
+                                                deleteNote={deleteNote} 
+                                                archiveNote={archiveNote} 
+                                                unArchiveNote={unArchiveNote} 
+                                                foreverDeleteNote={deleteClickedNote} 
+                                                restoreNote={restoreNote} 
+                                                copyNote={copyNote} 
+                                                collaborator={collaborator}
+                                                selectColor={selectColor}
+                                                bgcolor={(storedNote.background && storedNote.background!=="default")?colors.get(storedNote.background):""}
+                                            />
                                             {/* <Note notes={a} updateNote={updateNote}  */}
                                         </div>
                                     })
@@ -511,7 +1214,19 @@ export default function Home() {
                                     {
                                         context.note.map((storedNote) => {
                                             return <div key={storedNote._id} style={{ cursor: "default" }} onClick={(onlyNameOfTab !== "trash") ? () => { updateNote(storedNote) } : () => { displayNote(storedNote) }} >
-                                                <Note label={onlyNameOfTab} notes={storedNote} deleteNote={deleteNote} archiveNote={archiveNote} unArchiveNote={unArchiveNote} foreverDeleteNote={deleteClickedNote} restoreNote={restoreNote} copyNote={copyNote} />
+                                                <Note 
+                                                    label={onlyNameOfTab} 
+                                                    notes={storedNote} 
+                                                    deleteNote={deleteNote} 
+                                                    archiveNote={archiveNote} 
+                                                    unArchiveNote={unArchiveNote} 
+                                                    foreverDeleteNote={deleteClickedNote} 
+                                                    restoreNote={restoreNote} 
+                                                    copyNote={copyNote} 
+                                                    collaborator={collaborator}
+                                                    selectColor={selectColor}
+                                                    bgcolor={(storedNote.background && storedNote.background!=="default")?colors.get(storedNote.background):""}
+                                                />
                                             </div>
                                         })
                                     }
@@ -527,7 +1242,20 @@ export default function Home() {
                                     {
                                         context.labelArchiveNotes.map((storedNote) => {
                                             return <div key={storedNote._id} style={{ cursor: "default" }} onClick={(onlyNameOfTab !== "trash") ? () => { updateNote(storedNote) } : () => { displayNote(storedNote) }} >
-                                                <Note labelArchive={true} label={onlyNameOfTab} notes={storedNote} deleteNote={deleteNote} archiveNote={archiveNote} unArchiveNote={unArchiveNote} foreverDeleteNote={deleteClickedNote} restoreNote={restoreNote} copyNote={copyNote} />
+                                                <Note 
+                                                    labelArchive={true} 
+                                                    label={onlyNameOfTab} 
+                                                    notes={storedNote} 
+                                                    deleteNote={deleteNote} 
+                                                    archiveNote={archiveNote} 
+                                                    unArchiveNote={unArchiveNote} 
+                                                    foreverDeleteNote={deleteClickedNote} 
+                                                    restoreNote={restoreNote} 
+                                                    copyNote={copyNote} 
+                                                    collaborator={collaborator}
+                                                    selectColor={selectColor}
+                                                    bgcolor={(storedNote.background && storedNote.background!=="default")?colors.get(storedNote.background):""}
+                                                />
                                             </div>
                                         })
                                     }

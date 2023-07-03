@@ -11,6 +11,7 @@ exports.authenticateUser = (req,res,next) => {
         const check=jwt.verify(token,SECRET);
         req.userID=check.id;
         req.userName=check.name;
+        req.email=check.email;
         next();
     }
     catch(err)

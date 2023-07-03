@@ -27,6 +27,8 @@ const NoteState = (props) => {
     //store archive notes of label
     const [labelArchiveNotes,setLabelArchiveNotes] = useState([]);
 
+    const [loading,setLoading] = useState(false);
+
     const changeMode = () => {
         console.log(mode);
         if(mode === "white")
@@ -76,7 +78,8 @@ const NoteState = (props) => {
     }
 
     const getNotes = (currentTab) => {
-        const url = (process.env.NODE_ENV === "development")?`http://192.168.154.178:5000/api/note/readnote?fetch=${currentTab}` : `/api/note/readnote?fetch=${currentTab}`;
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/readnote?fetch=${currentTab}` : `/api/note/readnote?fetch=${currentTab}`;
         // const url = `/api/note/readnote`;
         fetch(url, {
             method: "get",
@@ -90,13 +93,15 @@ const NoteState = (props) => {
             let notes = d;
             setNote(notes);
             setInitialFetchNotes(notes);
+            setLoading(false);
             // findWithOutDelete(notes);
             // findDeletedNotes(notes);
         })
     }
 
     const getArchiveNotesOfLabel = (currentTab) => {
-        const url = (process.env.NODE_ENV === "development")?`http://192.168.154.178:5000/api/note/readArchiveNote?fetch=${currentTab}`:`/api/note/readArchiveNote?fetch=${currentTab}`;
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/readArchiveNote?fetch=${currentTab}`:`/api/note/readArchiveNote?fetch=${currentTab}`;
         // const url = `/api/note/readnote`;
         fetch(url, {
             method: "get",
@@ -110,13 +115,16 @@ const NoteState = (props) => {
             let notes = d;
             setLabelArchiveNotes(notes);
             setInitialFetchNotesForArchive(notes);
+            setLoading(false);
             // findWithOutDelete(notes);
             // findDeletedNotes(notes);
         })
     }
 
     const addNotes = (noteData,currentTab) => {
-        const url = (process.env.NODE_ENV === "development")?"http://192.168.154.178:5000/api/note/createnote" : "/api/note/createnote";
+        console.log(noteData);
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?"http://192.168.139.178:5000/api/note/createnote" : "/api/note/createnote";
         fetch(url, {
             method: "post",
             headers: {
@@ -135,7 +143,8 @@ const NoteState = (props) => {
     const updateNote = (updatedData, noteId, currentTab) => {
         console.log(updatedData);
         console.log(noteId);
-        const url = (process.env.NODE_ENV === "development")?`http://192.168.154.178:5000/api/note/updatenote/${noteId}`:`/api/note/updatenote/${noteId}`;
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/updatenote/${noteId}`:`/api/note/updatenote/${noteId}`;
         fetch(url, {
             method: "PATCH",
             headers: {
@@ -153,12 +162,13 @@ const NoteState = (props) => {
     }
 
     const updateManyNote = (updatedData,labelName,currentTab) => {
+        setLoading(true);
         console.log(updatedData);
         const updateFilterAndData = {
             data:updatedData,
             labelName:labelName
         }
-        const url = (process.env.NODE_ENV === "development")?`http://192.168.154.178:5000/api/note/updateManyNote`:`/api/note/updateManyNote`;
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/updateManyNote`:`/api/note/updateManyNote`;
         fetch(url, {
             method: "PATCH",
             headers: {
@@ -176,7 +186,8 @@ const NoteState = (props) => {
     }
 
     const deleteNote = (noteId,currentTab) => {
-        const url = (process.env.NODE_ENV === "development")?`http://192.168.154.178:5000/api/note/deletenote/${noteId}`:`/api/note/deletenote/${noteId}`;
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/deletenote/${noteId}`:`/api/note/deletenote/${noteId}`;
         fetch(url, {
             method: "DELETE",
             headers: {
@@ -193,7 +204,8 @@ const NoteState = (props) => {
     }
 
     const addUser = (userData,first,second,third,fourth) => {
-        const url = (process.env.NODE_ENV === "development")?"http://192.168.154.178:5000/api/user/signup":"/api/user/signup";
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?"http://192.168.139.178:5000/api/user/signup":"/api/user/signup";
         fetch(url, {
             method: "post",
             headers: {
@@ -203,11 +215,12 @@ const NoteState = (props) => {
         }).then((res) => {
             return res.json();
         }).then((d) => {
-            console.log(d);
+            console.log(d);            
             if (d.success) {
                 localStorage.setItem('token', d.token);
                 localStorage.setItem("userName", d.name);
                 localStorage.setItem("userEmail", d.email);
+                localStorage.setItem("id", d.id);
                 first.value=second.value=third.value=fourth.value="";
                 navigate("/");
             }
@@ -218,11 +231,13 @@ const NoteState = (props) => {
                 });
                 toast.clearWaitingQueue();
             }
+            setLoading(false);
         })
     }
 
     const loginUser = (loginUserData,first,second) => {
-        const url = (process.env.NODE_ENV === "development")?"http://192.168.154.178:5000/api/user/login":"/api/user/login";
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?"http://192.168.139.178:5000/api/user/login":"/api/user/login";
         fetch(url, {
             method: "post",
             headers: {
@@ -239,6 +254,7 @@ const NoteState = (props) => {
                 localStorage.setItem("token", d.token);
                 localStorage.setItem("userName", d.name);
                 localStorage.setItem("userEmail", d.email);
+                localStorage.setItem("id", d.id);
                 localStorage.setItem("labels",d.labels);
                 navigate("/");
             }
@@ -249,15 +265,18 @@ const NoteState = (props) => {
                 });
                 toast.clearWaitingQueue();
             }
+            setLoading(false);
         })
     }
 
     const addUserLabel = (labelName,oldName) => {
-        const url = (process.env.NODE_ENV === "development")?"http://192.168.154.178:5000/api/user/createLabel":"/api/user/createLabel";
+        setLoading(true);        
+        const url = (process.env.NODE_ENV === "development")?"http://192.168.139.178:5000/api/user/createLabel":"/api/user/createLabel";
         const lName = {
             labels: labelName,
             oldName:oldName
-        }
+        }        
+        console.log(lName);
         fetch(url, {
             method: "PATCH",
             headers: {
@@ -270,13 +289,18 @@ const NoteState = (props) => {
         }).then((d) => {
             console.log(d);
             getLabels();
-            if(location.pathname === `${labelName}`)
-                navigate(`/${labelName}`);
+            console.log(location.pathname+" "+oldName);
+            if(location.pathname === `/${oldName}`)
+                navigate(`/${labelName}`);         
+                
+            if(location.pathname === `/${labelName}` && oldName === "Delete")
+                navigate(`/`);
         })
     }
 
     const getLabels = () => {
-        const url = (process.env.NODE_ENV === "development")?"http://192.168.154.178:5000/api/user/getuser":"/api/user/getuser";
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?"http://192.168.139.178:5000/api/user/getuser":"/api/user/getuser";
         fetch(url, {
             method: "GET",
             headers: {
@@ -290,11 +314,87 @@ const NoteState = (props) => {
             localStorage.setItem("labels",d);
             setLabel(d);
             props.checkUserData();
+            setLoading(false);
+        })
+    }
+
+    //store note collaborators when note clicked
+    const [collaborators,setCollaborators] = useState(null);   
+
+    //store selected noteId for colloborator
+    const [selectedNoteId,setselectedNoteId] = useState(null);
+
+    //store selected note for colloborator
+    const [selectedNote,setSelectedNote] = useState(null);
+
+    const updateNoteCollaborators = (updatedData, currentTab) => {
+        setLoading(true);
+        console.log(updatedData);
+        console.log(selectedNoteId);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/updatenote/${selectedNoteId}/collaborators`:`/api/note/updatenote/${selectedNoteId}/collaborators`;
+        fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "token": localStorage.getItem("token")
+            },
+            body: JSON.stringify(updatedData)
+        }).then((res) => {
+            return res.json();
+        }).then((d) => {
+            console.log(d);
+            setCollaborators(d.collaborators);
+            getNotes(currentTab);
+            getArchiveNotesOfLabel(currentTab);
+        })
+    }
+
+    const removeNoteCollaborators = (updatedData, currentTab) => {
+        setLoading(true);
+        console.log(updatedData);
+        console.log(selectedNoteId);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/updatenote/${selectedNoteId}/removeCol`:`/api/note/updatenote/${selectedNoteId}/removeCol`;
+        fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "token": localStorage.getItem("token")
+            },
+            body: JSON.stringify(updatedData)
+        }).then((res) => {
+            return res.json();
+        }).then((d) => {
+            console.log(d);
+            setCollaborators(d.collaborators);
+            getNotes(currentTab);
+            getArchiveNotesOfLabel(currentTab);
+        })
+    }
+
+    // const [backgroundColor,setBa]
+
+    const updateColor = (updatedData,currentTab) => {
+        setLoading(true);
+        const url = (process.env.NODE_ENV === "development")?`http://192.168.139.178:5000/api/note/updatenote/${selectedNoteId}`:`/api/note/updatenote/${selectedNoteId}`;
+        console.log(updatedData);
+        fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "token": localStorage.getItem("token")
+            },
+            body: JSON.stringify(updatedData)
+        }).then((res) => {
+            return res.json();
+        }).then((d) => {
+            console.log(d);            
+            getNotes(currentTab);
+            getArchiveNotesOfLabel(currentTab);
         })
     }
 
     return (
-        <NoteContext.Provider value={{ note, addNotes, getNotes, updateNote, deleteNote, label, navbarWidth, changeNavbarWidth, addUser, loginUser, addUserLabel, getLabels, getArchiveNotesOfLabel, labelArchiveNotes, updateManyNote, changeSearchWords, changeSearchWordsForLabelArchive, changeMode, mode}}>
+        <NoteContext.Provider value={{ loading, note, collaborators, selectedNote, selectedNoteId, setLoading, setSelectedNote, setselectedNoteId, setCollaborators, addNotes, getNotes, updateNote, updateNoteCollaborators, removeNoteCollaborators, deleteNote, updateColor, label, navbarWidth, changeNavbarWidth, addUser, loginUser, addUserLabel, getLabels, getArchiveNotesOfLabel, labelArchiveNotes, updateManyNote, changeSearchWords, changeSearchWordsForLabelArchive, changeMode, mode}}>
             {props.children}
         </NoteContext.Provider>
     )

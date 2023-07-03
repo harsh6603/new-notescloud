@@ -36,6 +36,14 @@ const noteSchema = new mongoose.Schema({
     label:{
         type:String,
         default:false
+    },
+    background:{
+        type:String,
+        default:"default"
+    },
+    collaborators:{
+        type:[String],
+        default:[]
     }
 });
 

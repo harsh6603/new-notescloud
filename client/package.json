@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.2.0",
     "concurrently": "^7.2.2",
+    "formik": "^2.4.2",
     "jquery": "^3.6.0",
     "masonry-layout": "^4.2.2",
     "popper.js": "^1.16.1",
@@ -21,14 +22,15 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^9.0.7",
     "react-top-loading-bar": "^2.1.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yup": "^1.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "reactNode": "NODE_ENV=development concurrently \"npm run start\" \"cd.. && nodemon index.js\""
+    "reactNode": "concurrently \"npm run start\" \"cd.. && nodemon index.js\""
   },
   "eslintConfig": {
     "extends": [

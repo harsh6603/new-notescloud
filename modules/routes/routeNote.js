@@ -26,6 +26,12 @@ router.post("/createnote", authentication.authenticateUser, [
 //update note for loged in user
 router.patch("/updatenote/:id", authentication.authenticateUser, noteControl.updateNotes)
 
+//update note collaborators for logged in user
+router.patch("/updatenote/:id/collaborators", authentication.authenticateUser, noteControl.updateNoteCollaborators)
+
+//remove note collaborator for logged in user
+router.patch("/updatenote/:id/removeCol", authentication.authenticateUser, noteControl.removeNoteCollaborators)
+
 //update label(make label attribute false) in multiple notes
 router.patch("/updateManyNote", authentication.authenticateUser, noteControl.updateManyNotes)
 

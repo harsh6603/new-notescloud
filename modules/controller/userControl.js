@@ -27,12 +27,14 @@ exports.createUser = async (req, res) => {
             .then((user) => {
                 const data = {
                     id: user._id,
-                    name:user.name
+                    name:user.name,
+                    email:user.email
                 }
                 const result = jwt.sign(data, SECRET);
                 const responce = {
                     success: true,
                     token: result,
+                    id: user._id,
                     name:user.name,
                     email:user.email
                 }
@@ -82,12 +84,14 @@ exports.login = async (req, res) => {
         else {
             const load = {
                 id: result[0]._id,
-                name:result[0].name
+                name:result[0].name,
+                email:result[0].email
             }
             const token = jwt.sign(load, SECRET)
             res.json({
                 success:true,
                 token: token,
+                id: result[0]._id,
                 name:result[0].name,
                 email:result[0].email,
                 labels:result[0].labels

@@ -95,10 +95,10 @@
 }
 
 .searchIcon {
-    position: absolute;
-    left: 480px;
-    top: 36%;
-    color: rgb(117, 109, 109)
+    position: relative;
+    left: 3%;
+    /* top: 36%; */
+    color: rgb(117, 109, 109);
 }
 
 .styleInputSearchLight {
@@ -357,7 +357,7 @@
     border: 0;
     background-color: rgb(255, 186, 74);
     /* border-left:7px solid rgb(95, 8, 8); */
-    color: black;
+    color: #202124;
 }
 
 /* -------------------------------end vertical navbar------------------------- */
@@ -432,10 +432,11 @@
         display: block;
         /* opacity: 0; */
         position: fixed;
+        top:0;
         padding: 0px;
         margin: 0;
         padding-top: 0;
-        margin-top: -19%;
+        /* margin-top: -19%; */
         overflow: hidden;
         transition: width 0.4s;
     }
@@ -448,15 +449,13 @@
         display: block;
         position: fixed;
         padding: 0px;
+        top:0;
         margin: 0;
         padding-top: 0;
-        margin-top: -19%;
+        /* margin-top: -19%; */
         overflow: hidden;
         transition: width 0.4s;
     }
-}
-
-@media (max-width: 992px) {
     .navbar-collapse {
         position: fixed;
         top: 55px;
@@ -547,8 +546,8 @@
     }
 
     .searchIcon {
-        left: 10%;
-        top: 102px;
+        left: 6%;
+        /* top: 102px; */
     }
 
     .styleInputSearchLight {
@@ -593,6 +592,170 @@
     }
     .mainBoxForSwitch {
         left: 58%;
+    } 
+    .moonIcon{
+        margin-left: -41%;
+    }
+}
+
+@media only screen and (min-width:500px) and (max-width:1000px) {
+
+    .vertical-ul {        
+        width: 0%;
+        height: 100%;                
+        top:0;
+        margin-top: 0;        
+    }
+
+    .vertical-ul1 {        
+        width: 30%;
+        height: 100%;        
+        top:0;
+        margin-top:0;
+    }
+
+    .blankDiv {
+        margin-top: 0;
+        height: 25px;
+        width: 100%;
+    }
+
+    .blankDiv1 {        
+        position: fixed;
+        left: 0;        
+    }
+
+    .navbar-collapse {
+        position: fixed;
+        top: 55px;
+        left: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+        width: 75%;
+        height: 100%;
+    }
+
+    .navbar-collapse.collapsing {
+        left: -75%;
+        transition: height 0s ease;
+    }
+
+    .navbar-collapse.show {
+        left: 0;
+        transition: left 300ms ease-in-out;
+    }
+
+    .navbar-toggler.collapsed~.navbar-collapse {
+        transition: left 500ms ease-in-out;
+    }
+
+    .borderSet {
+        position: static;
+        border: 2px solid white;
+        width: 39px;
+        margin-right: -52%;
+        padding: 5px;
+        padding-left: 7px;
+        border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    }
+
+    .borderSet1 {
+        position: static;
+        /* border: 2px solid white; */
+        width: 39px;
+        margin-right: 6%;
+        padding: 5px;
+        padding-left: 7px;
+        /* border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; */
+    }
+
+    .borderSet2 {
+        position: static;
+        text-align: center;
+        /* left:1470px; */
+        left: 96%;
+        top: 10px;
+        border: 2px solid rgb(255, 186, 74);
+        background-color: rgb(255, 186, 74);
+        width: 39px;
+        margin-right: 6%;
+        padding: 5px;
+        border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    }
+
+    .profileDivShow {        
+        left: auto;
+        right:0;        
+        top: 1%;        
+    }
+
+    .profileDivHide {
+        left: 20%;
+    }
+
+    .search {
+        width: 87%;
+        height: 40px;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 6%;
+        padding-top: 0px;
+        border: 1px solid #f1f1f1;
+        background-color: #f1f1f1;
+    }
+
+    .searchDark {
+        width: 87%;
+        height: 40px;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 6%;
+        padding-top: 0px;
+        border: 1px solid #242526;
+        background-color: #242526;
+    }
+
+    .searchIcon {
+        left: 3%;
+        /* top: 102px; */
+    }
+
+    .styleInputSearchLight {
+        width: 80%;
+        margin-left: 11%;
+    }
+
+    .styleInputSearchDark {        
+        margin-left: 5%;        
+    }
+
+    .marginForNavbar {
+        margin: 0;
+        padding: 10px;
+        transition: margin-left 0.4s;
+    }
+
+    .marginForNavbarBefore {
+        margin: 0;
+        padding: 10px;
+        transition: margin-left 0.4s;
+    }
+
+    .currentTab {
+        margin-top: 3px;
+        left: 8%;
+    }
+    .blankDiv2 {
+        height: 10px;
+        width: 100%;
+    }
+    .blankDiv3 {
+        height: 90px;
+        width: 100%;
+    }
+    .mainBoxForSwitch {
+        left: 75%;
     } 
     .moonIcon{
         margin-left: -41%;

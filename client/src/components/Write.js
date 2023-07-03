@@ -93,7 +93,8 @@ export default function Write() {
                 noteData = {
                     title: title,
                     tag: tag,
-                    description: description
+                    description: description,
+                    collaborators:[localStorage.getItem("userEmail")]
                 }
             }
             else {
@@ -101,6 +102,7 @@ export default function Write() {
                     title: title,
                     tag: tag,
                     description: description,
+                    collaborators:[localStorage.getItem("userEmail")],
                     label: onlyNameOfTab
                 }
             }
@@ -166,7 +168,7 @@ export default function Write() {
         formData.append("image", file)
         // formData.append("description", description)
 
-        const url = (process.env.NODE_ENV === "development") ? "http://192.168.154.178:5000/api/note/images" : "/api/note/images"
+        const url = (process.env.NODE_ENV === "development") ? "http://192.168.139.178:5000/api/note/images" : "/api/note/images"
 
         fetch(url, {
             method: "POST",
@@ -212,10 +214,10 @@ export default function Write() {
         }
     };
 
-
-    const callInput = () => {
-        inputFile.current.click();
-    }
+    //image vado option on karo tyare aane comment mathi kadhi nakhvu.
+    // const callInput = () => {
+    //     inputFile.current.click();
+    // }
 
     const breakpointColumnsObj = {
         default: 3,
@@ -321,20 +323,22 @@ export default function Write() {
                                 <div className="mt-1">
                                     <input type="text" className={`form-control1 ${(context.mode === "white") ? "lightThemeWrite" : "darkThemeWrite"}`} placeholder={`${(toggle === "close") ? "Take a note ..." : "Title"}`} id="title" name="title" onClick={openNote} />
                                 </div>
-                                <hr />
+                                {/* <hr /> */}
                                 <div>
                                     <input type="text" className={`form-control1 ${(context.mode === "white") ? "lightThemeWrite" : "darkThemeWrite"}`} placeholder="Tag" id="tag" name="tag" />
                                 </div>
-                                <hr />
+                                {/* <hr /> */}
                                 <div>
                                     <textarea ref={textareaBtn} type="text" className={`form-control1 ${(context.mode === "white") ? "lightThemeWrite" : "darkThemeWrite"}`} placeholder="Description" id="description" name="description" onInput={setArea}></textarea>
                                 </div>
                                 {/* <div>
                                   <input onChange={onFileChange} type="file" multiple />
                                 </div> */}
-                                <i style={{ cursor: "pointer" }} onClick={callInput} className="fa-regular fa-image"></i>
+                                {/* <i style={{ cursor: "pointer" }} onClick={callInput} className="fa-regular fa-image"></i> */}
                                 <input ref={inputFile} style={{ display: "none" }} onChange={onFileChange} id="file-input" type="file" accept="image/*" multiple />
-                                <button ref={submitBtn} style={{ display: "none" }} type="submit" className="btn btn-dark mx-2 mb-2">Submit</button>
+                                <div className='d-flex justify-content-end' style={{padding:"1%",paddingRight:"5%"}}>
+                                    <p ref={submitBtn} style={{ display: "" }} type="submit" className="mx-2 mb-2" onClick={handleSubmit}>Done</p>
+                                </div>
                             </div>
                         </form>
                     </div>

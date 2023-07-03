@@ -1,0 +1,38 @@
+.loader {
+    border: 8px solid rgba(245, 245, 220, 0);
+    border-radius: 50%;
+    border-top: 8px solid orange;
+    border-right: 8px solid orange;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.centerDiv{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 17%;
+}
