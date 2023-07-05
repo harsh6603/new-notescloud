@@ -621,7 +621,7 @@ export default function Navbar() {
                         // checkLabelExist &&
                         <small id="labelErr" style={{visibility:"hidden",fontSize:"12px",color:"red",margin:0,padding:0}}>Label already exists</small>
                     }
-                    <div className='labelNames' style={{height:"300px",overflowY:"scroll"}}>                    
+                    <div className='labelNames' style={{height:(x.matches)?"":"300px",overflowY:"scroll"}}>                    
                     {
                         (context.label && localStorage.getItem("token")) &&
                         context.label.map((storedLabel) => {
