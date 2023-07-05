@@ -13,14 +13,14 @@ export default function Label() {
     useEffect(() => {
         const token = localStorage.getItem("token");
         if(!token)
-            navigate("/");
+            navigate("/login");
         // eslint-disable-next-line
     },[])
 
     const navigate = useNavigate();    
 
     if(!token)    
-        navigate("/");            
+        navigate("/login");            
     else
     {        
         let label = localStorage.getItem("labels");
