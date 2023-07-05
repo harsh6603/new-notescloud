@@ -294,7 +294,7 @@ const NoteState = (props) => {
             if(location.pathname === `/${oldName}`)
                 navigate(`/${labelName}`);         
                 
-            if(location.pathname === `/${labelName}` && oldName === "Delete")
+            if(location.pathname === `/${labelName.replace(' ','%20')}` && oldName === "Delete")
                 navigate(`/`);
         })
     }

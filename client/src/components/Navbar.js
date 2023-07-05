@@ -117,7 +117,7 @@ export default function Navbar() {
         const addLabel = document.getElementById("addLabel1");        
         // console.log(location.pathname)        
         const labelErr = document.getElementById("labelErr");
-            
+
         let check = context.label.includes(labelname);
         if(!check)
         {
@@ -412,7 +412,7 @@ export default function Navbar() {
         const labelName = e.target.parentElement.parentElement.children[2].children[1];
         console.log(labelName.value);
         context.addUserLabel(labelName.value,"Delete");
-        if(location.pathname === `/${labelName.value}`)
+        if(location.pathname === `/${(labelName.value).replace(' ','%20')}`)
         {
             setShowLabelModal(false);
         }

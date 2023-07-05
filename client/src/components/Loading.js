@@ -13,7 +13,7 @@ export default function Loading() {
                 width:"100%",
                 height:"100%",                                
                 position:"fixed",
-                zIndex:"5",
+                zIndex:"1000",
                 backdropFilter:"blur(8px)",                                            
             }}        
         >
