@@ -29,7 +29,8 @@ export default function Label() {
         if(!labels.includes(labelName))navigate("/");
     }
     console.log("Here2");
-    return (        
+    return (   
+        token &&     
         <Home labelName={labelName} />
     )
 
