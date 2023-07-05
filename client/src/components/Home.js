@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState, useRef } from 'react'
 import NoteContext from '../context/NoteContext'
 import Note from './Note';
 import "../Home.css"
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Write from './Write';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,6 +15,8 @@ import { collaboratorSchema } from '../schemas';
 export default function Home(props) {
 
     const {labelName} = props;    
+
+    const navigate = useNavigate();
 
     //Define location
     let location = useLocation()
@@ -37,7 +39,8 @@ export default function Home(props) {
         }
         else
         {
-            onlyNameOfTab = "Home"
+            onlyNameOfTab = "Home" 
+            navigate("/");           
         }
     }
     else {
