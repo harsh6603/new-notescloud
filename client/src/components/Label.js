@@ -30,8 +30,10 @@ export default function Label() {
     }
     console.log("Here2");
     return (   
-        token &&     
+        token?     
         <Home labelName={labelName} />
+        :
+        <Home/>
     )
 
 }
