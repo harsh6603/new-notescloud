@@ -1,3 +1,17 @@
+.labelNames::-webkit-scrollbar {
+    width: 10px;
+    height: 2px;
+}
+
+.labelNames::-webkit-scrollbar-track {
+    background: white;
+}
+
+.labelNames::-webkit-scrollbar-thumb {
+    background-color: rgb(172, 172, 172);
+    border-radius: 20px;
+}
+
 .cls-1 {
     fill: #efcc00;
 }

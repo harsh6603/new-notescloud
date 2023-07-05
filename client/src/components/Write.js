@@ -166,8 +166,7 @@ export default function Write() {
 
         const formData = new FormData();
         formData.append("image", file)
-        // formData.append("description", description)
-
+        // formData.append("description", description)        
         const url = (process.env.NODE_ENV === "development") ? "http://192.168.101.178:5000/api/note/images" : "/api/note/images"
 
         fetch(url, {

@@ -19,7 +19,7 @@ export default function Navbar() {
     }
     else {
         onlyNameOfTab = currentTab.slice(1);
-        onlyNameOfTab = onlyNameOfTab.replace('%20',' ');
+        onlyNameOfTab = onlyNameOfTab.replace(/%20/g,' ');
     }
 
     const [changebalContent, setChangebalContent] = useState("");
@@ -192,7 +192,7 @@ export default function Navbar() {
             if (context.navbarWidth === "click") {
                 // setFlag(true);
                 // setUlClass("vertical-ul");
-                console.log(smallTag);
+                // console.log(smallTag);
                 // setTimeout(() => {
                 for (let i = 0; i < smallTag.length; i++) {
                     smallTag[i].classList.remove("navbarSmallDisplayVisible");
@@ -412,7 +412,7 @@ export default function Navbar() {
         const labelName = e.target.parentElement.parentElement.children[2].children[1];
         console.log(labelName.value);
         context.addUserLabel(labelName.value,"Delete");
-        if(location.pathname === `/${(labelName.value).replace(' ','%20')}`)
+        if(location.pathname === `/${(labelName.value).replace(/ /g,'%20')}`)
         {
             setShowLabelModal(false);
         }
@@ -484,6 +484,18 @@ export default function Navbar() {
         setLabelname(e.target.value);
     }
 
+    const add3Dots = (string, limit) => {
+            
+        var dots = "...";
+        if(string.length > limit)
+        {
+            // you can also use substr instead of substring
+            string = string.substring(0,limit) + dots;
+        }
+
+        return string;
+    }
+
     return (            
         <div>
             <Loading/>
@@ -496,7 +508,7 @@ export default function Navbar() {
                     <i ref={navBtn} className="fa-solid fa-bars" style={{ cursor: "pointer", fontSize: "20px", color: (context.mode === "white") ? "black" : "white" }} onClick={callChangeNavbarWidth}></i>
                 </div>
 
-                <h6 className={`${(context.mode === "white") ? "text-dark" : "text-white"} currentTab`}>{(onlyNameOfTab === "archive") ? "Archive" : (onlyNameOfTab === "trash") ? "Trash" : (onlyNameOfTab === "Home") ? "Notes" : onlyNameOfTab}</h6>
+                <h6 className={`${(context.mode === "white") ? "text-dark" : "text-white"} currentTab`}>{(onlyNameOfTab === "archive") ? "Archive" : (onlyNameOfTab === "trash") ? "Trash" : (onlyNameOfTab === "Home") ? "Notes" : add3Dots(onlyNameOfTab,15)}</h6>
 
                 {/* <div className='borderSet'>
                     <i className="fa fa-search" aria-hidden="true"></i>
@@ -598,6 +610,7 @@ export default function Navbar() {
                         // checkLabelExist &&
                         <small id="labelErr" style={{visibility:"hidden",fontSize:"12px",color:"red",margin:0,padding:0}}>Label already exists</small>
                     }
+                    <div className='labelNames' style={{height:"300px",overflowY:"scroll"}}>                    
                     {
                         (context.label && localStorage.getItem("token")) &&
                         context.label.map((storedLabel) => {
@@ -620,6 +633,7 @@ export default function Navbar() {
                             </div>
                         })
                     }
+                    </div>
                 </Modal.Body>
                 <Modal.Footer style={{border:"none"}}>
                     <p style={{cursor:"pointer"}} onClick={handleHideLabelModal} >Done</p>
@@ -722,7 +736,7 @@ export default function Navbar() {
                                     <Link className={`setIcon ${(location.pathname === `/${storedLabel}`) ? "active" : ""}`} to={`/${storedLabel}`}>
                                     <svg className='marginRight' width="24" height="24" strokeWidth="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="IconChangeColor"> <path d="M3 17.4V6.6C3 6.26863 3.26863 6 3.6 6H16.6789C16.8795 6 17.0668 6.10026 17.1781 6.26718L20.7781 11.6672C20.9125 11.8687 20.9125 12.1313 20.7781 12.3328L17.1781 17.7328C17.0668 17.8997 16.8795 18 16.6789 18H3.6C3.26863 18 3 17.7314 3 17.4Z" stroke="currentColor" strokeWidth="2" id="mainIconPathAttribute"></path> </svg>                                    
                                         {/* {(ulClass === "vertical-ul1")?storedLabel:""} */}
-                                        <small className="getSmall navbarSmallDisplayNone">{storedLabel}</small>
+                                        <small className="getSmall navbarSmallDisplayNone">{add3Dots(storedLabel,12)}</small>
                                     </Link>
                                 </li>
                             })}
@@ -780,7 +794,7 @@ export default function Navbar() {
                                 <Link className={`setIcon ${(location.pathname === `/${storedLabel}`) ? "active" : ""}`} to={`/${storedLabel}`}>                                    
                                     <svg className='marginRight' width="24" height="24" strokeWidth="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="IconChangeColor"> <path d="M3 17.4V6.6C3 6.26863 3.26863 6 3.6 6H16.6789C16.8795 6 17.0668 6.10026 17.1781 6.26718L20.7781 11.6672C20.9125 11.8687 20.9125 12.1313 20.7781 12.3328L17.1781 17.7328C17.0668 17.8997 16.8795 18 16.6789 18H3.6C3.26863 18 3 17.7314 3 17.4Z" stroke="currentColor" strokeWidth="2" id="mainIconPathAttribute"></path> </svg>                                    
                                     {/* {(ulClass === "vertical-ul1")?storedLabel:""} */}
-                                    <small className="getSmall navbarSmallDisplayNone">{storedLabel}</small>
+                                    <small className="getSmall navbarSmallDisplayNone">{add3Dots(storedLabel,12)}</small>
                                 </Link>
                             </li>
                         })}

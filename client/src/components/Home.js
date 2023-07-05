@@ -23,7 +23,7 @@ export default function Home() {
     }
     else {
         onlyNameOfTab = currentTab.slice(1);
-        onlyNameOfTab = onlyNameOfTab.replace('%20',' ');
+        onlyNameOfTab = onlyNameOfTab.replace(/%20/g,' ');
     }
 
     //reference of close button of modal in mobile view
