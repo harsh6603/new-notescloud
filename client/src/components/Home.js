@@ -189,6 +189,7 @@ export default function Home(props) {
         setSelectedLabels(clickedNote.label);
         setInitialSelectedLabels(clickedNote.label);
         context.setselectedNoteId(clickedNote._id);
+        context.setCollaborators(clickedNote.collaborators)
         setWantToUpdate({
             editNoteId: clickedNote._id,
             userId: clickedNote.userID,
