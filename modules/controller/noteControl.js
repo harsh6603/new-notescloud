@@ -22,7 +22,7 @@ exports.readNotes = async (req, res) => {
         else if (fetch == "Home") {
             archiveStatus = false;
             deleteStatus = false;
-            labelStatus = "false";
+            // labelStatus = "false";
         }
         else if (fetch == "trash") {
             archiveStatus = false;
@@ -39,11 +39,15 @@ exports.readNotes = async (req, res) => {
             res.json(result);
         }
         else if (fetch == "archive") {
-            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
+            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus }).sort({ restoreDate: -1 });
+            res.json(result);
+        }
+        else if(fetch == "Home"){
+            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus}).sort({ restoreDate: -1 });
             res.json(result);
         }
         else {
-            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
+            const result = await noteModel.Note.find({ $or:[{userID: req.userID},{collaborators:req.email}], archive: archiveStatus, deleted: deleteStatus, 'label.labelName' : labelStatus, 'label.userEmail': req.email }).sort({ restoreDate: -1 });
             res.json(result);
         }
     }
@@ -62,7 +66,7 @@ exports.readLabelArchiveNotes = async (req, res) => {
         deleteStatus = false;
         labelStatus = fetch;
         console.log(fetch + " " + archiveStatus + " " + deleteStatus);
-        const result = await noteModel.Note.find({ userID: req.userID, archive: archiveStatus, deleted: deleteStatus, label: labelStatus }).sort({ restoreDate: -1 });
+        const result = await noteModel.Note.find({ userID: req.userID, archive: archiveStatus, deleted: deleteStatus, 'label.labelName' : labelStatus, 'label.userEmail': req.email}).sort({ restoreDate: -1 });
         res.json(result);
     }
     catch (err) {
@@ -220,10 +224,33 @@ exports.deleteNote = async (req, res) => {
 exports.updateManyNotes = async (req, res) => {
     try {
         const dataOfUpdate = req.body.data;
-        const filter = req.body.labelName;
+        const oldLabel = req.body.oldLabel;
+        const newLabel = req.body.data.label;
+        const operation = req.body.operation;
+        const filter = req.body.oldLabel;
 
-        const updateLabel = await noteModel.Note.updateMany({ label: filter }, { $set: dataOfUpdate });
-        res.json(updateLabel);
+        if(operation==="Update")
+        {
+            const updateLabels = await noteModel.Note.updateMany(
+                {'label.labelName' : oldLabel, 'label.userEmail': req.email},
+                {$set:{'label.$.labelName' : newLabel}}
+            )
+            res.json(updateLabels);
+        }
+        else
+        {
+            let email=req.email;
+            let userID=req.userID;
+            const deleteLabels = await noteModel.Note.updateMany(
+                {'label.labelName' : oldLabel, 'label.userEmail': req.email},
+                { $pull: { label: { labelName:oldLabel, userEmail:req.email } } }
+            )
+
+            res.json(deleteLabels);
+        }
+
+        // const updateLabel = await noteModel.Note.updateMany({ label: filter }, { $set: dataOfUpdate });
+        // res.json(updateLabels);
     }
     catch (err) {
         console.log(err);

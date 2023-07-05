@@ -19,6 +19,7 @@ export default function Navbar() {
     }
     else {
         onlyNameOfTab = currentTab.slice(1);
+        onlyNameOfTab = onlyNameOfTab.replace('%20',' ');
     }
 
     const [changebalContent, setChangebalContent] = useState("");
@@ -109,15 +110,28 @@ export default function Navbar() {
                 smallTag[i].classList.add("navbarSmallDisplayNone");
             }
         }
-    }
+    }    
 
     //when click on add label
     const handleAddLabel = () => {
         const addLabel = document.getElementById("addLabel1");        
-        // console.log(location.pathname)
-        context.addUserLabel(labelname, null);
-        addLabel.value = "";        
-        setLabelname("");
+        // console.log(location.pathname)        
+        const labelErr = document.getElementById("labelErr");
+            
+        let check = context.label.includes(labelname);
+        if(!check)
+        {
+            context.addUserLabel(labelname, null);
+            addLabel.value = "";        
+            setLabelname("");
+        }
+        else
+        {
+            labelErr.style.visibility="visible";
+            setTimeout(() => {
+                labelErr.style.visibility="hidden";
+            }, 2000);
+        }
         // refOfCloseLabelModal.current.click();
     }
 
@@ -390,23 +404,23 @@ export default function Navbar() {
         const updatedData = {
             label: newName,
         }
-        context.updateManyNote(updatedData, storeInitialLabel, onlyNameOfTab);
+        context.updateManyNote(updatedData, storeInitialLabel, "Update", onlyNameOfTab);
         refOfCloseLabelModal.current.click();
     }
 
     const deleteLabel = (e) => {        
         const labelName = e.target.parentElement.parentElement.children[2].children[1];
         console.log(labelName.value);
-        context.addUserLabel(labelName.value, "Delete");
+        context.addUserLabel(labelName.value,"Delete");
         if(location.pathname === `/${labelName.value}`)
         {
             setShowLabelModal(false);
         }
         const updatedData = {
             label: "false",
-            restoreDate: new Date()
+            // restoreDate: new Date()
         }
-        context.updateManyNote(updatedData, labelName.value, onlyNameOfTab);
+        context.updateManyNote(updatedData, labelName.value, "Delete", onlyNameOfTab);
         // refOfCloseLabelModal.current.click();
     }
 
@@ -574,19 +588,24 @@ export default function Navbar() {
                 </Modal.Header>
                 <Modal.Body>                    
                     <div className='d-flex justify-content-start'>
-                        <input style={{width:"100%"}} className='addLabelModal' placeholder='Enter label name' type="text" id='addLabel1' name='addLabel' onChange={changeLabelName} />
+                        <input style={{width:"100%"}} className='addLabelModal' placeholder='Enter label name' type="text" id='addLabel1' name='addLabel' onChange={changeLabelName} />                        
                         {
                             (labelname.length!==0 )&&
                             <i style={{cursor:"pointer", paddingLeft:"4%",paddingTop:"3%"}} className="fa-solid fa-check" onClick={handleAddLabel}></i>
                         }
                     </div>
                     {
+                        // checkLabelExist &&
+                        <small id="labelErr" style={{visibility:"hidden",fontSize:"12px",color:"red",margin:0,padding:0}}>Label already exists</small>
+                    }
+                    {
                         (context.label && localStorage.getItem("token")) &&
                         context.label.map((storedLabel) => {
                             return <div id="labels" key={storedLabel} className='d-flex justify-content-start my-3'>
 
                                 <div id="withLabel">
-                                    <svg style={{ cursor: "pointer", marginRight: "10px" }} enableBackground="new 0 0 32 32" height="25px" version="1.1" viewBox="0 0 32 32" width="25px" xmlns="http://www.w3.org/2000/svg"><path clipRule="evenodd" d="M31.697,15.287  c-0.011-0.011-6.947-6.993-6.947-6.993c-0.203-0.203-0.47-0.298-0.735-0.291c-0.008,0-0.015-0.005-0.023-0.005h-23  c-0.88,0-1.32,1.109-0.705,1.727l6.242,6.295l-6.169,6.222C-0.305,22.859-0.009,24,1.203,23.998h22.78  c0.278,0.018,0.561-0.07,0.774-0.284l6.94-6.999C32.09,16.321,32.09,15.681,31.697,15.287z M23.626,21.991L3.439,21.997l5.21-5.254  c0.199-0.2,0.295-0.462,0.293-0.724c0.003-0.262-0.094-0.524-0.293-0.724L3.396,9.998h20.204l5.959,6.01L23.626,21.991z" fill="rgb(99,99,99)" fillRule="evenodd" id="Vintage_Luxury_Arrow_Right" /><g /><g /><g /><g /><g /><g /></svg>
+                                    {/* <svg style={{ cursor: "pointer", marginRight: "10px" }} enableBackground="new 0 0 32 32" height="25px" version="1.1" viewBox="0 0 32 32" width="25px" xmlns="http://www.w3.org/2000/svg"><path clipRule="evenodd" d="M31.697,15.287  c-0.011-0.011-6.947-6.993-6.947-6.993c-0.203-0.203-0.47-0.298-0.735-0.291c-0.008,0-0.015-0.005-0.023-0.005h-23  c-0.88,0-1.32,1.109-0.705,1.727l6.242,6.295l-6.169,6.222C-0.305,22.859-0.009,24,1.203,23.998h22.78  c0.278,0.018,0.561-0.07,0.774-0.284l6.94-6.999C32.09,16.321,32.09,15.681,31.697,15.287z M23.626,21.991L3.439,21.997l5.21-5.254  c0.199-0.2,0.295-0.462,0.293-0.724c0.003-0.262-0.094-0.524-0.293-0.724L3.396,9.998h20.204l5.959,6.01L23.626,21.991z" fill="rgb(99,99,99)" fillRule="evenodd" id="Vintage_Luxury_Arrow_Right" /><g /><g /><g /><g /><g /><g /></svg> */}
+                                    <svg width="24" height="24" style={{ cursor: "pointer", marginRight: "10px" }} strokeWidth="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="IconChangeColor"> <path d="M3 17.4V6.6C3 6.26863 3.26863 6 3.6 6H16.6789C16.8795 6 17.0668 6.10026 17.1781 6.26718L20.7781 11.6672C20.9125 11.8687 20.9125 12.1313 20.7781 12.3328L17.1781 17.7328C17.0668 17.8997 16.8795 18 16.6789 18H3.6C3.26863 18 3 17.7314 3 17.4Z" stroke="rgb(99,99,99)" strokeWidth="2" id="mainIconPathAttribute"></path> </svg>                                    
                                     {/* <small style={{ marginLeft: "20px" }}>{storedLabel}</small> */}
                                 </div>
                                 {/* withSelete class is assign when mouse is hover on the div  */}

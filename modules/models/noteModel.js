@@ -34,8 +34,14 @@ const noteSchema = new mongoose.Schema({
         default:false
     },
     label:{
-        type:String,
-        default:false
+        type:[{
+            labelName:{
+                type:String,                
+            },
+            userEmail:{
+                type:String,                
+            }
+        }],        
     },
     background:{
         type:String,

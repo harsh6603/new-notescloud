@@ -117,36 +117,60 @@ exports.getUser = async (req, res) => {
 
 exports.createLabel = async (req, res) => {
     try{
-        let labelName = req.body.labels;
+        let newlabelName = req.body.newLabelName;
         //when we want to upadte label at that time old name comes in oldName variable
         //When we want to delete that label at that time "Delete" come in oldName variable
         let oldName = req.body.oldName;
-        const result = await userModel.User.findById(req.userID);
-        if (result._id.toString() !== req.userID)
+        const user = await userModel.User.findById(req.userID);
+        if (user._id.toString() !== req.userID)
             return res.status(401).send("Not allowed to update.");
 
         if(oldName)
         {
             if(oldName === "Delete")
             {
-                const deleteLabel =await userModel.User.updateMany(
-                    { },
-                    { $pull: { labels: { $in: [ labelName ] } } }
-                )
-                res.json(deleteLabel);
+                //in delete newlabelName is our old label name which store in database so we check for newlabelName wether it exist in user labels or not
+                const labelIndex = user.labels.indexOf(newlabelName);
+                if(labelIndex===-1)
+                    return res.status(400).send("Label not found.")
+
+                user.labels.splice(labelIndex,1);
+                
+                const result = await user.save();
+                // const deleteLabel =await userModel.User.updateMany(
+                //     { },
+                //     { $pull: { labels: { $in: [ newlabelName ] } } }
+                // )
+                res.json(result);
             }
             else
             {
-                const updateLabel = await userModel.User.updateMany(
-                    {labels:oldName},
-                    {$set:{"labels.$":labelName}}
-                )
-                res.json(updateLabel);
+                // Check if the old label exists in the labels array
+                const labelIndex = user.labels.indexOf(oldName);
+                if(labelIndex===-1)
+                    return res.status(400).send("Label not found.")
+
+                const updateLabels = user.labels.map((label) => {
+                    if(label === oldName)
+                        return newlabelName;
+                    else    
+                        return label;
+                })
+
+                user.labels = updateLabels;
+
+                const result = await user.save();
+                res.json(result);
+                // const updateLabel = await userModel.User.updateMany(
+                //     {labels:oldName},
+                //     {$set:{"labels.$":newlabelName}}
+                // )
+                // res.json(updateLabel);
             }
         }
         else
         {
-            const addLabel = await userModel.User.findByIdAndUpdate(req.userID, { $push: { labels : labelName} }, { new: true });
+            const addLabel = await userModel.User.findByIdAndUpdate(req.userID, { $push: { labels : newlabelName} }, { new: true });
             res.json(addLabel);
         }
     }

@@ -26,7 +26,7 @@ function App() {
     if (localStorage.getItem("token")) {
       let label = localStorage.getItem("labels");
       let labels = label.split(",");
-      console.log(labels);
+      // console.log(labels);
       setLabel(labels);
     }
   }
@@ -37,7 +37,7 @@ function App() {
       if (localStorage.getItem("token")) {
         let label = localStorage.getItem("labels");
         let labels = label.split(",");
-        console.log(labels);
+        // console.log(labels);
         setLabel(labels);
       }
       window.removeEventListener('storage', checkUserData)
@@ -54,6 +54,7 @@ function App() {
               <Route exact path={"/archive"} element={<Home />} />
               <Route exact path={"/about"} element={<About />} />
               {localStorage.getItem("token") && label.map((storedLabel) => {
+                storedLabel = storedLabel.replace(' ','%20');
                 // console.log(storedLabel)
                 return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
               })}

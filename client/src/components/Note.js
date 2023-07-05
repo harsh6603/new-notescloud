@@ -15,19 +15,38 @@ export default function Note(props) {
     let location = useLocation();
     const x = window.matchMedia("(max-width: 500px)");
 
-    let count = 0;
+    let count = 0,countLabel=0;
 
-    const { notes, deleteNote, archiveNote, unArchiveNote, foreverDeleteNote, restoreNote, labelArchive, copyNote, collaborator, selectColor, bgcolor } = props;
+    const { notes, deleteNote, archiveNote, unArchiveNote, foreverDeleteNote, restoreNote, labelArchive, copyNote, collaborator, selectColor, bgcolor, clickLabelModalBtn } = props;
     // console.log(!x.matches);    
-
+    
     return (
         <>
             <div id="cards" className={`card ${(context.mode === "white") ? "card" : "cardBlack"}`} style={{backgroundColor:bgcolor}}>
                 <div className="card-body">
                     <h5 className="card-title">{notes.title}</h5>
                     <p className="card-text">{notes.description}</p>
-
-                    {(notes.label !== "false") && <span className={`badge ${(context.mode === "white") ? "text-bg-dark" : "text-bg-light"} mb-3`}>{notes.label}</span>}
+                    
+                    {(notes.label.length!==0 ) && 
+                        // eslint-disable-next-line
+                        notes.label.map((label) => {
+                            if(label.userEmail === userEmail)
+                            {
+                                countLabel++;
+                                if(countLabel<=2)
+                                {
+                                    return <span key={label.labelName} style={{backgroundColor:(context.mode === "white")?"gainsboro":"gainsboro",color:"black"}} className={`me-1 badge mb-2`}>{label.labelName}</span>
+                                }
+                            }
+                        })                            
+                    }
+                    {
+                        (countLabel-2 > 0)&&
+                        <span style={{backgroundColor:(context.mode === "white")?"gainsboro":"gainsboro",color:"black"}} className={`me-1 badge mb-2`}>
+                            <i style={{fontSize:"9px"}} className="fa-solid fa-plus"></i>
+                            <i style={{ fontWeight: "bolder", fontSize: "12px" }} className={`fa-solid fa-${(countLabel-2) && countLabel-2}`} aria-hidden="true"></i>
+                        </span>                        
+                    }
 
                     {/* collaborators */}
                     <div className='d-flex justify-content-start'>
@@ -45,9 +64,10 @@ export default function Note(props) {
                             })
                         }
                         {
+                            //ahi logged in user pote collborator che and 2 collaborator display karvana che etle total size mathi 3 minus karya che.
                             (notes.collaborators.length - 3 > 0) &&
                             <div className='collaboratorNameNote mb-3' style={{ backgroundColor: "gray" }}>
-                                <small>+</small>
+                                <i style={{fontSize:"9px"}} className="fa-solid fa-plus"></i>
                                 <i id="" style={{ fontWeight: "bolder", fontSize: "12px" }} className={`fa-solid fa-${(notes.collaborators.length - 3) && notes.collaborators.length - 3}`} aria-hidden="true"></i>
                             </div>
                         }
@@ -97,13 +117,19 @@ export default function Note(props) {
                                     <svg onClick={(e) => {selectColor(notes,e.target); e.stopPropagation(); }} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 512 512" id="IconChangeColor"><path d="M430.11,347.9c-6.6-6.1-16.3-7.6-24.6-9-11.5-1.9-15.9-4-22.6-10-14.3-12.7-14.3-31.1,0-43.8l30.3-26.9c46.4-41,46.4-108.2,0-149.2-34.2-30.1-80.1-45-127.8-45-55.7,0-113.9,20.3-158.8,60.1-83.5,73.8-83.5,194.7,0,268.5,41.5,36.7,97.5,55,152.9,55.4h1.7c55.4,0,110-17.9,148.8-52.4C444.41,382.9,442,359,430.11,347.9Z" stroke='currentColor' fill={`${(context.mode === "white") ? "none" : "currentColor"}`} strokeMiterlimit={10} strokeWidth={"32px"} id="mainIconPathAttribute"></path><circle cx="144" cy="208" r="32"></circle><circle cx="152" cy="311" r="32"></circle><circle cx="224" cy="144" r="32"></circle><circle cx="256" cy="367" r="48"></circle><circle cx="328" cy="144" r="32"></circle></svg>                                    
                                 </div>
 
+                                {/* add label */}
+                                <div title='Add Label' id="option" className='setArchive' onClick={(e) => {clickLabelModalBtn(notes);e.stopPropagation()}} >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill='currentColor' viewBox="0 0 24 24" id="IconChangeColor" height="21" width="21"><path d="M21,12l-4.37,6.16C16.26,18.68,15.65,19,15,19h-3l0-6H9v-3H3V7c0-1.1,0.9-2,2-2h10c0.65,0,1.26,0.31,1.63,0.84L21,12z M10,15H7v-3H5v3H2v2h3v3h2v-3h3V15z" id="mainIconPathAttribute" strokeWidth="1"></path></svg>
+                                </div>
+
 
                             </div>
                             :
                             (x.matches !== true) &&
                             <div className="d-flex justify-content-start">
-                                <div id="option">
-                                    <i style={{ cursor: "pointer", fontSize: "16px", color: (context.mode === "white") ? "black" : "white" }} id="delete" title="Delete Forever" className="fa fa-trash-o" onClick={(e) => { foreverDeleteNote(notes._id); e.stopPropagation(); }} ></i>
+                                <div id="option" className='setArchive'>
+                                    {/* <i style={{ cursor: "pointer", fontSize: "16px", color: (context.mode === "white") ? "black" : "white" }} id="delete" title="Delete Forever" className="fa fa-trash-o" onClick={(e) => { foreverDeleteNote(notes._id); e.stopPropagation(); }} ></i> */}
+                                    <svg onClick={(e) => { foreverDeleteNote(notes._id); e.stopPropagation(); }} xmlns="http://www.w3.org/2000/svg" width="21" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" id="IconChangeColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" id="mainIconPathAttribute" strokeWidth="2" stroke="currentColor"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                 </div>
                                 <div id="option">
                                     <i style={{ cursor: "pointer", fontSize: "16px", color: (context.mode === "white") ? "black" : "white" }} id="restore" title="Restore Note" className="fa-solid fa-trash-arrow-up" onClick={(e) => { restoreNote(notes._id); e.stopPropagation(); }}></i>

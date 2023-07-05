@@ -139,7 +139,7 @@ export default function Write() {
              * Alert if clicked on outside of element
              */
             function handleClickOutside(event) {
-                console.log(event.target);
+                // console.log(event.target);
                 if (ref.current && !ref.current.contains(event.target)) {
                     // alert("You clicked outside of me!");
                     submitBtn.current.click();
@@ -168,7 +168,7 @@ export default function Write() {
         formData.append("image", file)
         // formData.append("description", description)
 
-        const url = (process.env.NODE_ENV === "development") ? "http://192.168.139.178:5000/api/note/images" : "/api/note/images"
+        const url = (process.env.NODE_ENV === "development") ? "http://192.168.101.178:5000/api/note/images" : "/api/note/images"
 
         fetch(url, {
             method: "POST",
