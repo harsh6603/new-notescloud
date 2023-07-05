@@ -55,7 +55,7 @@ function App() {
               <Route exact path={"/about"} element={<About />} />
               {localStorage.getItem("token") && label.map((storedLabel) => {
                 storedLabel = storedLabel.replace(/ /g,'%20');
-                // console.log(storedLabel)
+                console.log(storedLabel)
                 return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
               })}
               <Route exact path={"/trash"} element={<Home />} />
