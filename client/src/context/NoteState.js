@@ -199,6 +199,7 @@ const NoteState = (props) => {
             return res.json();
         }).then((d) => {
             console.log(d);
+            setLoading(false);
             getNotes(currentTab);
             getArchiveNotesOfLabel(currentTab);
         })

@@ -625,7 +625,7 @@ export default function Navbar() {
                     {
                         (context.label && localStorage.getItem("token")) &&
                         context.label.map((storedLabel) => {
-                            return <div id="labels" key={storedLabel} className='d-flex justify-content-start my-3'>
+                            return <div id="labels" key={storedLabel} className='d-flex justify-content-start my-3 pe-2'>
 
                                 <div id="withLabel">
                                     {/* <svg style={{ cursor: "pointer", marginRight: "10px" }} enableBackground="new 0 0 32 32" height="25px" version="1.1" viewBox="0 0 32 32" width="25px" xmlns="http://www.w3.org/2000/svg"><path clipRule="evenodd" d="M31.697,15.287  c-0.011-0.011-6.947-6.993-6.947-6.993c-0.203-0.203-0.47-0.298-0.735-0.291c-0.008,0-0.015-0.005-0.023-0.005h-23  c-0.88,0-1.32,1.109-0.705,1.727l6.242,6.295l-6.169,6.222C-0.305,22.859-0.009,24,1.203,23.998h22.78  c0.278,0.018,0.561-0.07,0.774-0.284l6.94-6.999C32.09,16.321,32.09,15.681,31.697,15.287z M23.626,21.991L3.439,21.997l5.21-5.254  c0.199-0.2,0.295-0.462,0.293-0.724c0.003-0.262-0.094-0.524-0.293-0.724L3.396,9.998h20.204l5.959,6.01L23.626,21.991z" fill="rgb(99,99,99)" fillRule="evenodd" id="Vintage_Luxury_Arrow_Right" /><g /><g /><g /><g /><g /><g /></svg> */}

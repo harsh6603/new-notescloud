@@ -229,19 +229,23 @@ export default function Home(props) {
     }
 
     //update deleted value to true for that note in database
-    const deleteAfterConfirm = (deleteNoteId) => {
-        if (showUpdateEventModal) {
-            handleHideDeleteNoteModal()
-            handleHideUpdateModal()
-        }
-        else
-            handleHideDeleteNoteModal();
+    const deleteAfterConfirm = (deleteNoteId) => {                
 
         const updatedData = {
             collaborators: [userEmail],
             deleted: true
         }
         context.updateNote(updatedData, deleteNoteId, onlyNameOfTab);
+
+        if (showUpdateEventModal && showDeleteModal) {            
+            handleHideDeleteNoteModal()
+            handleHideUpdateModal()
+        }
+        else if(showUpdateEventModal)
+            handleHideUpdateModal();
+        else if(showDeleteModal)
+            handleHideDeleteNoteModal();
+
         // x.matches && backBtn.current.click()
     }
 
@@ -260,8 +264,11 @@ export default function Home(props) {
 
     //delete note forever
     const deleteClickedNote = (deleteNoteID) => {
+        
         context.deleteNote(deleteNoteID, onlyNameOfTab);
-        x.matches && backBtn.current.click()
+        if(showUpdateEventModal)
+            handleHideUpdateModal();
+        // x.matches && backBtn.current.click()
     }
 
     //function for restoring notes 
@@ -272,7 +279,9 @@ export default function Home(props) {
             restoreDate: new Date()
         }
         context.updateNote(updatedData, restoreNoteId, onlyNameOfTab);
-        x.matches && backBtn.current.click()
+        if(showUpdateEventModal)
+            handleHideUpdateModal();
+        // x.matches && backBtn.current.click()
     }
 
     //copy note
@@ -310,6 +319,7 @@ export default function Home(props) {
     //Display note in trash
     const displayNote = (clickedNote) => {
         console.log(clickedNote);
+        setBackgroundColor(clickedNote.background)
         setDeletedNote({
             deletedNoteId: clickedNote._id,
             deletedTitle: clickedNote.title,
@@ -1075,7 +1085,7 @@ export default function Home(props) {
                                     (onlyNameOfTab === "trash")
                                         ?
                                         // <i style={{ cursor: "pointer", fontSize: "18px", margin: "0 10px" }} id="delete" title="Delete Forever" className="fa fa-trash-o" onClick={(e) => { deleteClickedNote(wantToUpdate.editNoteId); e.stopPropagation(); }} ></i>
-                                        <svg style={{ cursor: "pointer",marginTop: "-1px"}} onClick={(e) => { deleteClickedNote(wantToUpdate.editNoteId); e.stopPropagation(); }} title="Delete Forever" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" id="IconChangeColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" id="mainIconPathAttribute" strokeWidth="2" stroke="currentColor"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                        <svg style={{ cursor: "pointer",marginTop: "-1px"}} onClick={(e) => { deleteClickedNote(deletedNote.deletedNoteId); e.stopPropagation(); }} title="Delete Forever" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" id="IconChangeColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" id="mainIconPathAttribute" strokeWidth="2" stroke="currentColor"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                         :
                                         (wantToUpdate.editCollaborators.length <= 1 || wantToUpdate.userId === id) &&
                                         <i style={{ cursor: "pointer", fontSize: "18px", margin: "0 10px" }} id="delete" title="Delete" className="fa fa-trash-o" onClick={(e) => { deleteNote(wantToUpdate.editNoteId, wantToUpdate.editCollaborators.length); e.stopPropagation(); }} ></i>
