@@ -11,7 +11,8 @@ import Login from './components/Login';
 import WithoutNav from './WithoutNav';
 import WithNav from './WithNav';
 import Signup from './components/Signup';
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import LoadingFallback from "./components/LoadingFallback";
 
 function App() {
 
@@ -48,16 +49,17 @@ function App() {
     <div className="App">
       <Router>
         <NoteState checkUserData={checkUserData}>
+        <Suspense fallback={<LoadingFallback/>}>
           <Routes>
             <Route element={<WithNav />}>
               <Route exact path={"/"} element={<Home />} />
               <Route exact path={"/archive"} element={<Home />} />
-              <Route exact path={"/about"} element={<About />} />
-              {localStorage.getItem("token") && label.map((storedLabel) => {
-                storedLabel = storedLabel.replace(/ /g,'%20');
-                console.log(storedLabel)
-                return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
-              })}
+              <Route exact path={"/about"} element={<About />} />              
+                {localStorage.getItem("token") && label.map((storedLabel) => {
+                  storedLabel = storedLabel.replace(/ /g,'%20');
+                  console.log(storedLabel)
+                  return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
+                })}              
               <Route exact path={"/trash"} element={<Home />} />
               {/* <Route exact path={"/trash"} element={<Trash />} /> */}
             </Route>
@@ -66,6 +68,7 @@ function App() {
               <Route exact path={"/signup"} element={<Signup />} />
             </Route>
           </Routes>
+          </Suspense>
         </NoteState>
       </Router>
     </div>
