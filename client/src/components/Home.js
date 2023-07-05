@@ -12,14 +12,26 @@ import { Modal } from 'react-bootstrap';
 import { Formik } from 'formik';
 import { collaboratorSchema } from '../schemas';
 
-export default function Home() {
+export default function Home(props) {
+
+    const {labelName} = props;    
 
     //Define location
     let location = useLocation()
-    let currentTab = location.pathname;
+    let currentTab = location.pathname;    
+
+    let subString = currentTab.substring(
+        currentTab.indexOf("/") + 1, 
+        currentTab.lastIndexOf("/")
+    );
+
     let onlyNameOfTab;
     if (currentTab === "/") {
         onlyNameOfTab = "Home";
+    }
+    else if(subString === "label"){
+        onlyNameOfTab = labelName;
+        onlyNameOfTab = onlyNameOfTab.replace(/%20/g,' ');
     }
     else {
         onlyNameOfTab = currentTab.slice(1);

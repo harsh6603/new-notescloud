@@ -11,11 +11,12 @@ import Login from './components/Login';
 import WithoutNav from './WithoutNav';
 import WithNav from './WithNav';
 import Signup from './components/Signup';
-import { Suspense, useEffect, useState } from "react";
-import LoadingFallback from "./components/LoadingFallback";
+import { useEffect, useState } from "react";
+import Label from "./components/Label";
 
 function App() {
 
+  // eslint-disable-next-line
   const [label, setLabel] = useState([]);
   // let add = localStorage.getItem("labels");
   // let labels = add.split(",");
@@ -45,21 +46,22 @@ function App() {
     }
     // eslint-disable-next-line
   }, [])
+
   return (
     <div className="App">
       <Router>
         <NoteState checkUserData={checkUserData}>
-        <Suspense fallback={<LoadingFallback/>}>
           <Routes>
             <Route element={<WithNav />}>
               <Route exact path={"/"} element={<Home />} />
               <Route exact path={"/archive"} element={<Home />} />
-              <Route exact path={"/about"} element={<About />} />              
-                {localStorage.getItem("token") && label.map((storedLabel) => {
-                  storedLabel = storedLabel.replace(/ /g,'%20');
-                  console.log(storedLabel)
-                  return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
-                })}              
+              <Route exact path={"/about"} element={<About />} />
+              <Route exact path={"/label/:labelName"} element={<Label/>} />
+              {/* {localStorage.getItem("token") && label.map((storedLabel) => {
+                storedLabel = storedLabel.replace(/ /g,'%20');
+                console.log(storedLabel)
+                return <Route key={storedLabel} exact path={`/${storedLabel}`} element={<Home />} />
+              })} */}
               <Route exact path={"/trash"} element={<Home />} />
               {/* <Route exact path={"/trash"} element={<Trash />} /> */}
             </Route>
@@ -68,7 +70,6 @@ function App() {
               <Route exact path={"/signup"} element={<Signup />} />
             </Route>
           </Routes>
-          </Suspense>
         </NoteState>
       </Router>
     </div>

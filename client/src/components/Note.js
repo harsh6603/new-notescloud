@@ -19,6 +19,18 @@ export default function Note(props) {
 
     const { notes, deleteNote, archiveNote, unArchiveNote, foreverDeleteNote, restoreNote, labelArchive, copyNote, collaborator, selectColor, bgcolor, clickLabelModalBtn } = props;
     // console.log(!x.matches);    
+
+    const add3Dots = (string, limit) => {
+            
+        var dots = "...";
+        if(string.length > limit)
+        {
+            // you can also use substr instead of substring
+            string = string.substring(0,limit) + dots;
+        }
+
+        return string;
+    }
     
     return (
         <>
@@ -35,7 +47,7 @@ export default function Note(props) {
                                 countLabel++;
                                 if(countLabel<=2)
                                 {
-                                    return <span key={label.labelName} style={{backgroundColor:(context.mode === "white")?"gainsboro":"gainsboro",color:"black"}} className={`me-1 badge mb-2`}>{label.labelName}</span>
+                                    return <span key={label.labelName} style={{backgroundColor:(context.mode === "white")?"gainsboro":"gainsboro",color:"black"}} className={`me-1 badge mb-2`}>{add3Dots(label.labelName,16)}</span>
                                 }
                             }
                         })                            
