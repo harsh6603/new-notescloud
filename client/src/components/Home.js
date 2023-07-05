@@ -30,8 +30,15 @@ export default function Home(props) {
         onlyNameOfTab = "Home";
     }
     else if(subString === "label"){
-        onlyNameOfTab = labelName;
-        onlyNameOfTab = onlyNameOfTab.replace(/%20/g,' ');
+        if(labelName)
+        {
+            onlyNameOfTab = labelName;
+            onlyNameOfTab = onlyNameOfTab.replace(/%20/g,' ');
+        }
+        else
+        {
+            onlyNameOfTab = "Home"
+        }
     }
     else {
         onlyNameOfTab = currentTab.slice(1);
