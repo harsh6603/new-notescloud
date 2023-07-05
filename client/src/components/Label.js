@@ -9,26 +9,25 @@ export default function Label() {
     // console.log(labelName);
 
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();    
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+        console.log(token);
         if(!token)
-            navigate("/login");
+        {               
+            navigate("/");
+        }
+        else
+        {                    
+            let label = localStorage.getItem("labels");
+            let labels = label.split(",");
+        
+            if(!labels.includes(labelName))navigate("/");
+        }
         // eslint-disable-next-line
-    },[])
-
-    const navigate = useNavigate();    
-
-    if(!token)    
-        navigate("/login");            
-    else
-    {        
-        let label = localStorage.getItem("labels");
-        let labels = label.split(",");
+    },[])    
     
-        if(!labels.includes(labelName))navigate("/");
-    }
-    console.log("Here2");
     return (   
         token?     
         <Home labelName={labelName} />
