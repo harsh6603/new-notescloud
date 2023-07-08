@@ -441,6 +441,13 @@ export default function Navbar() {
         context.changeSearchWordsForLabelArchive(search.value);
     }
 
+    //clear search value when user change tab
+    useEffect(() => {
+        const search = document.getElementById("search");
+        console.log(search);
+        search.value="";
+    },[location.pathname])
+
     //State for dark and light mode cicle icon
     const [circle, setCircle] = useState("left");
     const shiftCircle = () => {
