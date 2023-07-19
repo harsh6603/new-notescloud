@@ -116,7 +116,7 @@
 }
 
 .styleInputSearchLight {
-    width: 90%;
+    width: 85%;
     outline: none;
     background-color: #f1f1f1;
     color: black;
@@ -127,7 +127,7 @@
 }
 
 .styleInputSearchDark {
-    width: 90%;
+    width: 85%;
     outline: none;
     background-color: #242526;
     color: white;

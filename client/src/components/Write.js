@@ -10,6 +10,8 @@ import ProgressBar from 'react-bootstrap/ProgressBar';
 
 export default function Write() {
 
+    const baseUrl = 'http://192.168.104.178:5000'
+
     //track upload
     const [upload, setUpload] = useState(false);
 
@@ -167,7 +169,7 @@ export default function Write() {
         const formData = new FormData();
         formData.append("image", file)
         // formData.append("description", description)        
-        const url = (process.env.NODE_ENV === "development") ? "http://192.168.121.178:5000/api/note/images" : "/api/note/images"
+        const url = (process.env.NODE_ENV === "development") ? `${baseUrl}/api/note/images` : "/api/note/images"
 
         fetch(url, {
             method: "POST",
