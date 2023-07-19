@@ -263,16 +263,17 @@ hr {
 }
 
 textarea::-webkit-scrollbar {
-    width: 10px;
-    height: 2px;
+    width: 7px;
+    height: 2px;    
 }
 
 textarea::-webkit-scrollbar-track {
-    background: white;
+    background: inherit;
 }
 
 textarea::-webkit-scrollbar-thumb {
     background-color: rgb(172, 172, 172);
+    background-color:rgb(166, 160, 160);
     border-radius: 20px;
 }
 

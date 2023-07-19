@@ -151,10 +151,10 @@ export default function Home(props) {
             date: Date.now()
         }
         context.updateNote(updatedData, wantToUpdate.editNoteId, onlyNameOfTab);
-        if (x.matches)
-            backBtn.current.click();
-        else
-            closeBtn.current.click();
+        // if (x.matches)
+        //     backBtn.current.click();
+        // else
+        //     closeBtn.current.click();
     }
 
     //for open and close writeing note div
@@ -1209,7 +1209,7 @@ export default function Home(props) {
                         onlyNameOfTab !== "trash" ?
                             <div className="d-flex justify-content-between">
                                 <div className=" d-flex justify-content-around">
-                                    <button type="submit" style={{ color: `${(context.mode === "white") ? "green" : "lightgreen"}`, fontWeight: "500" }} className="myBtn btn mx-2" onClick={handleUpdate}>Update</button>
+                                    <button type="submit" style={{ color: `${(context.mode === "white") ? "green" : "lightgreen"}`, fontWeight: "500" }} className="myBtn btn mx-2" onClick={handleHideUpdateModal}>Update</button>
                                     {(!x.matches) && <button ref={closeBtn} style={{ color: (context.mode === "white") ? "black" : "white" }} type="button" className="myBtn btn" data-bs-dismiss="modal" onClick={handleHideUpdateModal} >Close</button>}
                                 </div>
                                 {/* <small>Edited {wantToUpdate.editDate.getHours() + ":" + ((wantToUpdate.editDate.getMinutes()<10)?"0"+wantToUpdate.editDate.getMinutes():wantToUpdate.editDate.getMinutes())}</small> */}
