@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const NoteState = (props) => {
 
-    const baseUrl = 'http://192.168.104.178:5000'
+    const baseUrl = 'http://192.168.43.178:5000'
 
     let location = useLocation()
 

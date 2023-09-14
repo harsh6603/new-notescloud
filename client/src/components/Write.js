@@ -10,7 +10,7 @@ import ProgressBar from 'react-bootstrap/ProgressBar';
 
 export default function Write() {
 
-    const baseUrl = 'http://192.168.104.178:5000'
+    const baseUrl = 'http://192.168.43.178:5000'
 
     //track upload
     const [upload, setUpload] = useState(false);
